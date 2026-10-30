@@ -92,7 +92,7 @@ html.portal .tail-stage .tail-rare-card canvas{width:120px;height:136px;aspect-r
 .tail-goal:not(.open) .tail-tasks{margin:0;padding:0;border:0}
 .tail-goal:not(.open) .tail-rare-hint{flex-basis:100%;margin:0;padding:2px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tail-goal:not(.open) .tail-rare-hint i{display:none}
-@media(min-width:751px){.tail-event{top:64px}}
+@media(min-width:751px){.tail-event{top:auto;bottom:62px}.tail-urgent:not([hidden])~.tail-event{bottom:76px}}
 @media(max-width:750px){.tail-goal:not(.open){top:3px;left:6px;column-gap:7px;padding:2px 7px}.tail-goal:not(.open)>div{width:32px}}
 /* Panels fit without scrolling: the shop lists two to a row with one-line notes (training says what
    it does on its button), the guest book is a grid of small portraits with the chosen guest's
@@ -879,8 +879,9 @@ function tailRenderer(canvas,lang='zh'){
  function portafilter(x,y,handle=1){rr(x-9,y-3,18,6,3);fill('#4d5551');ellipse(x,y-3,8,2,'#3b2516');line([[x+handle*8,y],[x+handle*27,y+4]],'#2c2522',5);ellipse(x+handle*28,y+4,3.2,3.2,'#2c2522');}
  // A jammed machine smokes and waves a red flag until the manager fixes it.
  function jam(x,g){for(let n=0;n<5;n++){const sy=(g.time*26+n*11)%50;ellipse(x-20+n*10+Math.sin(g.time*2+n)*5,TOP-96-sy,6+sy*.2,5+sy*.15,`rgba(90,84,80,${.45*(1-sy/50)})`);}const by=TOP-150+Math.sin(g.time*6)*3;rr(x-52,by-12,104,24,12);fill('#b5452fe8');text(zh?'卡住了 · 店长来修':'JAMMED · FIX IT',x,by,9.5,'#fff3e0','center',700);}
+ const brewStage=(g,s)=>{if(!s.item)return null;const m=TAIL_MENU[s.item.type],d=tailMakeTime(g,s.item.type);return s.progress<1?'grind':s.progress<m.prep?'tamp':m.milk&&s.progress>=d-m.milk?'milk':'pull';};
  function espresso(st,g){const x=st.x,T=TOP,n=st.slots.length,w=26+n*48,half=w/2;
-  const stage=s=>{if(!s.item)return null;const m=TAIL_MENU[s.item.type],d=tailMakeTime(g,s.item.type);return s.progress<1?'grind':s.progress<m.prep?'tamp':m.milk&&s.progress>=d-m.milk?'milk':'pull';};const stages=st.slots.map(stage),grinding=stages.includes('grind'),tamping=stages.includes('tamp');
+  const stage=s=>brewStage(g,s);const stages=st.slots.map(stage),grinding=stages.includes('grind'),tamping=stages.includes('tamp');
   grinder(x-half-24,g,grinding,.3+.6*Math.min(1,g.beans/tailBeanCap(g)));if(grinding)portafilter(x-half-24,T-6);if(tamping){portafilter(x-half-12,T+2);const ty=T-6-Math.abs(Math.sin(g.time*7))*7;rr(x-half-18,ty-4,12,5,1);fill(steel(x-half-18,12));rr(x-half-15,ty-15,6,11,3);fill('#7a5233');ellipse(x-half-12,ty-16,4.5,3.5,'#8a6040');}
   shadow(x,T+2,half+8,6);
   // Cup warmer with a rail and upturned cups.
@@ -890,8 +891,7 @@ function tailRenderer(canvas,lang='zh'){
   stages.forEach((s,i)=>ellipse(x-half+20+i*12,T-64,2.5,2.5,s?s==='milk'?'#9fc3e6':'#f1c96b':'#86c093'));
   // One group head per slot; a head's portafilter leaves for the grinder while that shot is prepped.
   rr(x-half+3,T-22,w-6,9,3);fill('#59625d');for(let k=0;k<(w-12)/7;k++)line([[x-half+7+k*7,T-21],[x-half+7+k*7,T-14]],'#8f9892',1);
-  st.slots.forEach((slot,i)=>{const gx=x+(i-(n-1)/2)*48,s=stages[i];rr(gx-11,T-52,22,9,3);fill(steel(gx-11,22));if(s!=='grind'&&s!=='tamp')portafilter(gx,T-40,i<(n-1)/2?-1:1);if(s==='pull'||s==='milk'){cup(gx,T-21,s==='milk'?'latte':'espresso',.6);}if(s==='pull')for(const dx of[-3,3]){c.save();c.globalAlpha=.7+Math.sin(g.time*30+dx+i)*.25;line([[gx+dx,T-34],[gx+dx*.4,T-26]],'#6a3a1f',1.6);c.restore();}
-   if(slot.item){const d=tailMakeTime(g,slot.item.type),k=slot.progress/d;rr(gx-17,T-114,34,5,3);fill('#1d3b2fcc');rr(gx-17,T-114,Math.max(2,34*k),5,3);fill(s==='milk'?'#9fc3e6':s==='pull'?'#efd081':'#e3a86a');text(zh?{grind:'研磨',tamp:'压粉',pull:'萃取',milk:'打奶'}[s]:{grind:'GRIND',tamp:'TAMP',pull:'PULL',milk:'MILK'}[s],gx,T-124,8.5,'#2f4a3c','center',700);if(slot.boost!==null)text(slot.boost>=90?'★':'✓',gx+22,T-112,10,'#c9a35a','center',700);}});
+  st.slots.forEach((slot,i)=>{const gx=x+(i-(n-1)/2)*48,s=stages[i];rr(gx-11,T-52,22,9,3);fill(steel(gx-11,22));if(s!=='grind'&&s!=='tamp')portafilter(gx,T-40,i<(n-1)/2?-1:1);if(s==='pull'||s==='milk'){cup(gx,T-21,s==='milk'?'latte':'espresso',.6);}if(s==='pull')for(const dx of[-3,3]){c.save();c.globalAlpha=.7+Math.sin(g.time*30+dx+i)*.25;line([[gx+dx,T-34],[gx+dx*.4,T-26]],'#6a3a1f',1.6);c.restore();}});
   line([[x+half-2,T-60],[x+half+6,T-58],[x+half+8,T-26]],'#d3dad4',3);ellipse(x+half-4,T-60,4,4,'#2c2522');
   if(stages.includes('milk')){const sx=x+half+6;rr(sx-7,T-27,15,16,[2,2,4,4]);fill(steel(sx-7,15));for(let k=0;k<5;k++){const sy=(g.time*42+k*9)%38;ellipse(sx+2+Math.sin(g.time*3+k)*4,T-30-sy,4+sy*.2,3+sy*.15,`rgba(255,252,240,${.55*(1-sy/38)})`);}}
   st.ready.slice(0,6).forEach((v,i)=>item(x-half+14+i*((w-28)/5),T-1,v.type,.72));if(st.ready.length>6){rr(x+half-16,T-12,26,14,7);fill('#1d3b2fe0');text('+'+(st.ready.length-6),x+half-3,T-5,8,'#f3e8c8','center',700);}
@@ -1138,7 +1138,9 @@ function tailRenderer(canvas,lang='zh'){
  // above it while the manager is away.
  // From day 2, while a first teammate of some kind is affordable, the office sign calls for help.
  const HIRE_FIRST=['busser','runner','barista','cashier','cook'],hireReady=g=>g.phase==='open'&&g.day>1&&HIRE_FIRST.some(r=>!tailStaffCount(g,r)&&tailCanSpend(g,tailHirePrice(g,r)));
- function pickupTags(g){const k=grow();if(hireReady(g)&&!tailInOffice(g.player)&&nextJob(g)?.label!=='👥')pill(zh?'👥 可以招人':'👥 HIRE HELP',118,496+Math.sin(g.time*5)*3,11*k,'#f2cf6a','#3a2a1a');for(const st of g.stations){if(!st.open||st.x<camera-140||st.x>camera+W+140)continue;const wait=tailWaitingPickup(g,st),age=wait.length?g.time-Math.min(...wait.map(it=>it.readyAt??g.time)):0,tagged=wait.length&&age>=TAIL_PICKUP_TAG;
+ // One tag per brewing shot, in the gap between the shop sign and the machine and drawn over the room.
+ function brewTags(g,st){const k=grow(),w=66*k,h=28*k,gap=Math.max(48,w+4),y=63;st.slots.forEach((slot,i)=>{const s=brewStage(g,slot);if(!s)return;const x=st.x+(i-(st.slots.length-1)/2)*gap,p=Math.min(1,slot.progress/tailMakeTime(g,slot.item.type)),bw=w-14*k;rr(x-w/2,y,w,h,8*k);fill('#1d3b2ff2');stroke('#d9c27d',1.2);text((zh?{grind:'研磨',tamp:'压粉',pull:'萃取',milk:'打奶'}[s]:{grind:'GRIND',tamp:'TAMP',pull:'PULL',milk:'MILK'}[s])+(slot.boost===null?'':slot.boost>=90?' ★':' ✓'),x,y+10*k,12*k,'#f6e6b8','center',700);rr(x-bw/2,y+h-9*k,bw,5*k,2.5*k);fill('#ffffff30');rr(x-bw/2,y+h-9*k,Math.max(2,bw*p),5*k,2.5*k);fill(s==='milk'?'#9fc3e6':s==='pull'?'#efd081':'#e3a86a');});}
+ function pickupTags(g){const k=grow();if(hireReady(g)&&!tailInOffice(g.player)&&nextJob(g)?.label!=='👥')pill(zh?'👥 可以招人':'👥 HIRE HELP',118,496+Math.sin(g.time*5)*3,11*k,'#f2cf6a','#3a2a1a');for(const st of g.stations){if(!st.open||st.x<camera-140||st.x>camera+W+140)continue;if(st.kind==='coffee')brewTags(g,st);const wait=tailWaitingPickup(g,st),age=wait.length?g.time-Math.min(...wait.map(it=>it.readyAt??g.time)):0,tagged=wait.length&&age>=TAIL_PICKUP_TAG;
   if(tagged){const late=age>=TAIL_PICKUP_NUDGE,tabs=[...new Set(wait.map(it=>it.group.special==='courier'?'🛵':String(it.group.table+1).padStart(2,'0')))],label='✋ '+tabs.slice(0,3).join(' ')+(tabs.length>3?' +'+(tabs.length-3):''),y=232+(late?Math.sin(g.time*6)*3:0);pill(label,st.x,y,11*k,late?'#f2cf6a':'#1d3b2fe6',late?'#3a2a1a':'#f6e6b8');}
   if(tailStalled(g,st).length&&Math.hypot(g.player.x-st.x,g.player.y-st.y)>=52)pill(zh?'⏸ 回来做完':'⏸ COME BACK',st.x,188+Math.sin(g.time*6)*3,11*k,'#e98b4a','#2a1a10');}}
  function onTop(g,list){pickupTags(g);const bob=Math.sin(g.time*5)*4,d=list.find(v=>v.kind==='deliver');if(d){const pts=[[g.player.x,g.player.y],[d.x,d.y]];c.save();c.lineCap='round';c.setLineDash([12,10]);c.lineDashOffset=-g.time*45;line(pts,'#3a2a1a77',8);line(pts,'#f2cf6a',4.5);c.restore();}
