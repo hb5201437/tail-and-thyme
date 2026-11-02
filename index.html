@@ -1199,10 +1199,14 @@ const RUSH_CHORDS=[[38,[53,57,60,64]],[46,[57,60,62,65]],[43,[53,57,58,62]],[45,
 // Busy-room sounds are rate-limited so a full café stays musical rather than noisy.
 const TAIL_GAPS={coin:.12,coinbig:.12,combo:.1,door:.35,order:.2,ready:.15,clink:.12,serve:.15,wash:.6,clear:.2,grind:.5,pour:.6,steam:.6,herb:.5,sizzle:.6,oven:.4,mop:.5};
 function tailAudio(){
- let heat=0,target=0,mood=0,moodBar=0,last={},ctx=null,master,musicBus,sfxBus,reverb,noiseBuffer,music=false,sfx=true,ducked=false,timer=0,step=0,nextTime=0;
+ let heat=0,target=0,mood=0,moodBar=0,last={},ctx=null,master,musicBus,sfxBus,reverb,noiseBuffer,music=false,sfx=true,ducked=false,timer=0,step=0,nextTime=0,away=false;
+ // Set while the page is hidden and cleared by the next tap back in the game; see wake().
+ const leave=()=>{if(document.hidden)away=true;};if(typeof document!=='undefined')document.addEventListener('visibilitychange',leave);
  function blip(c){try{const s=c.createBufferSource();s.buffer=c.createBuffer(1,1,22050);s.connect(c.destination);s.start(0);}catch{}}
- // A fresh context with the same settings; the music picks up from the next beat.
- function rebuild(){const old=ctx;ctx=null;try{old?.close?.().catch?.(()=>{});}catch{}if(!init())return;blip(ctx);ctx.resume?.().catch?.(()=>{});nextTime=ctx.currentTime+.08;busLevel();}
+ // A fresh context with the same settings; the music picks up from the next beat. Its clock starts
+ // at zero again, so the rate limits are cleared too, or they would hold every sound back for as
+ // long as the old context had been playing.
+ function rebuild(){const old=ctx;ctx=null;try{old?.close?.().catch?.(()=>{});}catch{}if(!init())return;last={};blip(ctx);ctx.resume?.().catch?.(()=>{});nextTime=ctx.currentTime+.08;busLevel();}
  function init(){if(ctx)return ctx;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;ctx=new AC();const comp=ctx.createDynamicsCompressor();comp.threshold.value=-18;comp.ratio.value=3;master=ctx.createGain();master.gain.value=.9;master.connect(comp);comp.connect(ctx.destination);
   // A short generated room impulse gives the café a little warmth.
   reverb=ctx.createConvolver();const len=ctx.sampleRate*1.8,ir=ctx.createBuffer(2,len,ctx.sampleRate);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len)**3;}reverb.buffer=ir;const wet=ctx.createGain();wet.gain.value=.22;reverb.connect(wet);wet.connect(master);
@@ -1292,12 +1296,13 @@ function tailAudio(){
   get mood(){return mood;},
   suspend(){ctx?.suspend?.();},resume(){ctx?.resume?.();},
   // iOS leaves the context 'interrupted' after the app comes back, and only a tap or key may restart
-  // it; on some versions resume() then never brings the sound back. So every press that finds it not
-  // running plays a silent blip (which counts as the gesture's sound) and resumes; an interrupted
-  // context is rebuilt at once, and one that is still not running a moment later is rebuilt too.
-  wake(){if(!ctx||ctx.state==='running'||document.hidden)return;if(ctx.state==='interrupted'){rebuild();return;}const live=ctx;blip(live);live.resume?.().catch?.(()=>{});setTimeout(()=>{if(ctx===live&&live.state!=='running'&&!document.hidden)rebuild();},400);},
+  // it. Worse, a context resumed without a tap can report 'running' and still play nothing, as it
+  // does in a portal's iframe. So the first press after the page was hidden always rebuilds the
+  // context inside that press. Any other press that finds it not running plays a silent blip (which
+  // counts as the gesture's sound) and resumes; one still not running a moment later is rebuilt.
+  wake(){if(!ctx||document.hidden)return;if(away||ctx.state==='interrupted'){away=false;rebuild();return;}if(ctx.state==='running')return;const live=ctx;blip(live);live.resume?.().catch?.(()=>{});setTimeout(()=>{if(ctx===live&&live.state!=='running'&&!document.hidden)rebuild();},400);},
   play(name,delay=0,v=0){if(!ctx||!sfx||ctx.state!=='running'||!sounds[name])return;const now=ctx.currentTime;if(TAIL_GAPS[name]&&now-(last[name]??-1)<TAIL_GAPS[name])return;last[name]=now;sounds[name](now+.01+delay,v);},
-  close(){clearInterval(timer);timer=0;ctx?.close().catch(()=>{});ctx=null;}};
+  close(){clearInterval(timer);timer=0;ctx?.close().catch(()=>{});ctx=null;if(typeof document!=='undefined')document.removeEventListener('visibilitychange',leave);}};
 }
 
 // The game's side of a web portal: loading, gameplay start and stop, and ad breaks. A portal build
