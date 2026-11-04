@@ -1290,8 +1290,10 @@ function tailRenderer(canvas,lang='zh'){
  // A data-fit canvas (portal build) is sized by CSS; the renderer only follows its shape. A tall
  // portrait canvas shows a narrower slice of the café (480 to 600 wide) so a phone gets a bigger picture.
  // A wide landscape canvas zooms in until the hall fills its width, so the floor runs edge to edge: the
- // view then shows 480 to 720 of the café's height and the camera rides up and down with the manager.
- function resize(){const r=canvas.getBoundingClientRect(),fit='fit' in canvas.dataset;const compact=fit?r.width<r.height:r.width<650;W=compact?(fit?Math.max(420,Math.min(600,Math.round(720*r.width/r.height))):600):fit?Math.max(1040,Math.min(2200,Math.round(r.width/r.height*Math.max(520,Math.min(720,1040*r.height/r.width))))):1040;wide=fit&&!compact;H=720;dpr=Math.min(window.devicePixelRatio||1,2);const height=fit?r.height:r.width/W*H;if(!fit&&Math.abs(r.height-height)>1)canvas.style.height=height+'px';const w=Math.round(r.width*dpr),h=Math.round(height*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}scale=w/W;VH=fit?h/scale:H;oy=VH>=H?(VH-H)/2:-camY;}
+ // view then shows 520 to 720 of the café's height and the camera rides up and down with the manager.
+ // A phone held sideways (under 500px tall) zooms in further, to 360 to 420 of the height, so guests
+ // and tables read at arm's length; the camera then pans across the hall as well.
+ function resize(){const r=canvas.getBoundingClientRect(),fit='fit' in canvas.dataset;const compact=fit?r.width<r.height:r.width<650;W=compact?(fit?Math.max(420,Math.min(600,Math.round(720*r.width/r.height))):600):!fit?1040:r.height<500?Math.round(r.width/r.height*Math.max(360,Math.min(420,r.height*1.05))):Math.max(1040,Math.min(2200,Math.round(r.width/r.height*Math.max(520,Math.min(720,1040*r.height/r.width)))));wide=fit&&!compact;H=720;dpr=Math.min(window.devicePixelRatio||1,2);const height=fit?r.height:r.width/W*H;if(!fit&&Math.abs(r.height-height)>1)canvas.style.height=height+'px';const w=Math.round(r.width*dpr),h=Math.round(height*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}scale=w/W;VH=fit?h/scale:H;oy=VH>=H?(VH-H)/2:-camY;}
  const near=(a,b,r)=>Math.hypot(a.x-b.x,a.y-b.y)<r;
  // The camera follows the manager. A one-room café keeps the whole hall in view with a signpost to
  // the terrace; once the café spreads out, a strip of the next locked area shows as a teaser.
@@ -1795,8 +1797,9 @@ function mount(root,api){const t=api.t,key='tail-cafe-v3-'+api.seed;const dailyD
   // only walking about reads the next thing to do here.
   const tip=tailNextTip(g),opening=g.day===1&&g.dayTime<6,note=g.time<g.noticeUntil&&g.notice!=='welcome'?words[g.notice]:null,tipText=note??((coarse()&&touchTips[tip])||tips[tip]),guide=pk==='walk'&&!carry&&!!tipText&&!opening;
   {const urgentOn=!$('#tail-urgent',root).hidden,now=performance.now();if(banner){if(urgentOn)banner.heldAt??=now;else if(banner.heldAt){banner.until+=now-banner.heldAt;banner.heldAt=null;}}$('.tail-context',root).classList.toggle('yield',urgentOn||(!$('#tail-event',root).hidden&&!carry));$('#tail-event',root).classList.toggle('yield',urgentOn);}$('.tail-context',root).classList.toggle('carry',carry);$('.tail-context',root).classList.toggle('tip',guide);
-  // The bottom line steps up to the top of the café while the manager is in the bottom third, so it never sits on them.
-  if(api.portal){const gm=$('.tail-game',root),st=$('.tail-stage',root)?.getBoundingClientRect(),py=renderer.screen(g.player.x,g.player.y).y;if(gm&&st?.height){const f=(py-st.top)/st.height,up=gm.classList.contains('hint-up');if(up?f<.6:f>.72)gm.classList.toggle('hint-up',!up);}}
+  // The bottom line steps up to the top of the café while the manager is down among the tables, so it never sits on
+  // them; at the bar it stays at the bottom, clear of the machines they are working.
+  if(api.portal){const gm=$('.tail-game',root);if(gm){const up=gm.classList.contains('hint-up'),y=g.player.y;if(up?y<440:y>480)gm.classList.toggle('hint-up',!up);}}
   $('#tail-context-text',root).textContent=carry?t(`送到 ${dests.join('、')}：跟着金色虚线走`,`Take it to ${dests.join(', ')}: follow the gold line`):guide?tipText:opening&&pk==='walk'?(coarse()?t('欢迎开店！点地面或按住拖动，走到点单台接待客人。','Welcome! Tap the floor or hold and drag to walk to the order counter.'):t('欢迎开店！点地面或用 WASD / 方向键，走到点单台接待客人。','Welcome! Click the floor or use WASD / arrows to walk to the order counter.')):(coarse()&&touchPrompts[pk])||prompts[pk];$('#tail-guide-text',root).textContent=saveFailed?t('浏览器没有允许保存，本局仍能继续。','This browser could not save progress. You can keep playing.'):(g.time<g.noticeUntil?words[g.notice]:(coarse()&&touchTips[tailNextTip(g)])||tips[tailNextTip(g)])??tips.welcome;
   
  // This is a visible status readout as well as screen-reader text, never hidden test state.
