@@ -1110,8 +1110,14 @@ function tailRenderer(canvas,lang='zh'){
  // that must keep its shape (the till, the office, the plants, the doormat, the gates) is drawn after,
  // in the strip's own coordinates.
  const BANDS=[[52,186,0,134],[186,256,134,170],[256,720,170,170+464*268/390]];
- // Locked equipment is a faint silhouette with a price tag, so the counter shows what can grow.
- function ghost(x,w,h,label,price){c.save();c.globalAlpha=.6;rr(x-w/2,TOP-h,w,h-4,10);fill('#eadcbf');c.setLineDash([5,5]);stroke('#a48c66',1.6);c.restore();text(label,x,TOP-h*.66,10,'#7d6a49','center',600);if(price!==null){rr(x-25,TOP-h*.5,50,20,10);fill('#2f5a48');text('✦ '+price,x,TOP-h*.5+10,10,'#f2dfaa','center',700);}}
+ // Locked equipment waits under a dust sheet with its name on a chalkboard, so the counter shows what can grow.
+ function ghost(x,w,h,label,price){const L=x-w/2,R=x+w/2,top=TOP-h+6,lift=.5+.5*Math.sin(x);shadow(x,TOP+2,w/2+8,6);
+  // A dust sheet thrown over the unopened kit: a soft dome, a scalloped hem and a few folds.
+  c.beginPath();c.moveTo(L-4,TOP);c.lineTo(L+4,top+16);c.quadraticCurveTo(L+8,top,L+28,top+1);c.quadraticCurveTo(x,top-6-4*lift,R-28,top+1);c.quadraticCurveTo(R-8,top,R-4,top+16);c.lineTo(R+4,TOP);for(let k=8;k>=0;k--){const hx=L-4+(w+8)*k/8;c.quadraticCurveTo(hx+(w+8)/16,TOP+5,hx,TOP);}c.closePath();fill(grad(0,top,0,TOP,['#f6ecd6','#e0cfaa']));stroke('#b39c74',1.4);
+  for(const [f,d]of[[-.3,-5],[.02,4],[.3,-3]])line([[x+w*f,top+6],[x+w*f+d,TOP-3]],'#c4ad8288',1.6);line([[L+12,top+18],[L+30,top+6]],'#ffffff88',2);
+  // A little chalkboard leans on the front with the name.
+  const sw=Math.min(w-16,label.length*(zh?13:7.6)+22),sy=TOP-30;rr(x-sw/2,sy,sw,22,5);fill('#2c4237');stroke('#8a6444',2);text(label,x,sy+11.5,11,'#f1e3b8','center',700);
+  if(price!==null){rr(x-25,TOP-h*.5,50,20,10);fill('#2f5a48');text('✦ '+price,x,TOP-h*.5+10,10,'#f2dfaa','center',700);}}
  function grinder(gx,g,on,level){const T=TOP,shake=on?Math.sin(g.time*70)*.7:0;c.save();c.translate(shake,0);shadow(gx,T+1,18,4);
   rr(gx-14,T-44,28,44,6);fill(grad(gx-14,0,gx+14,0,['#2b2523','#4c4440','#2a2421']));rr(gx-11,T-50,22,8,3);fill(steel(gx-11,22));ellipse(gx,T-31,5.5,5.5,'#cdd3cd');line([[gx,T-31],[gx+3,T-34]],'#3a3a3a',1.2);rr(gx-4,T-16,8,6,2);fill('#3a3431');
   // Tinted glass hopper filled to the current bean stock.
