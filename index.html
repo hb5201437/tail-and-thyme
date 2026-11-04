@@ -171,11 +171,11 @@ img.tail-coin{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.1
 /* The game itself has focus once clicked; a browser focus ring around it reads as a web page. */
 #tail-canvas:focus,#tail-canvas:focus-visible{outline:none}
 .tail-context #tail-bag[hidden]{display:none}
-/* Portal landscape: the café fills the 16:9 frame (the canvas widens up to 1280:720) and the readouts float over it,
+/* Portal landscape: the café fills the 16:9 frame (the canvas widens up to 2200:720, so a short phone browser fills with forest on both sides) and the readouts float over it,
    coins and beans top left, buttons top right, Manage bottom right. No sidebar, one line of guidance at the bottom. */
 @media(orientation:landscape){html.portal .tail-game{position:relative;display:block}
 html.portal .tail-field{position:absolute;inset:0}
-html.portal .tail-stage{width:min(100cqw,calc(100cqh*1280/720));height:min(100cqh,calc(100cqw*720/1040));aspect-ratio:auto}
+html.portal .tail-stage{width:min(100cqw,calc(100cqh*2200/720));height:min(100cqh,calc(100cqw*720/1040));aspect-ratio:auto}
 html.portal .tail-guide{display:none}
 html.portal .tail-hud{position:absolute;top:8px;left:8px;right:8px;z-index:4;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:6px;padding:0;background:none;pointer-events:none}
 html.portal .tail-hud>*{pointer-events:auto}
@@ -1281,7 +1281,7 @@ function tailRenderer(canvas,lang='zh'){
  function spill(s,g){c.save();ellipse(s.x,s.y,34,14,'#7a4a2a55');ellipse(s.x-6,s.y-2,22,9,'#8a5a3266');ellipse(s.x-12,s.y-4,6,2.5,'#fff2d888');c.restore();const sy=s.y-30;c.beginPath();c.moveTo(s.x+28,sy+22);c.lineTo(s.x+36,sy);c.lineTo(s.x+44,sy+22);c.closePath();fill('#f1c96b');text('!',s.x+36,sy+12,10,'#5a3a1a','center',800);if(Math.floor(g.time*2)%2)text(zh?'地滑':'SLIPPY',s.x,s.y+22,8,'#7a4a2a','center',700);}
  // A data-fit canvas (portal build) is sized by CSS; the renderer only follows its shape. A tall
  // portrait canvas shows a narrower slice of the café (480 to 600 wide) so a phone gets a bigger picture.
- function resize(){const r=canvas.getBoundingClientRect(),fit='fit' in canvas.dataset;const compact=fit?r.width<r.height:r.width<650;W=compact?(fit?Math.max(420,Math.min(600,Math.round(720*r.width/r.height))):600):fit?Math.max(1040,Math.min(1280,Math.round(720*r.width/r.height))):1040;wide=fit&&!compact;H=720;dpr=Math.min(window.devicePixelRatio||1,2);const height=fit?r.height:r.width/W*H;if(!fit&&Math.abs(r.height-height)>1)canvas.style.height=height+'px';const w=Math.round(r.width*dpr),h=Math.round(height*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}scale=w/W;VH=fit?Math.max(H,h/scale):H;oy=(VH-H)/2;}
+ function resize(){const r=canvas.getBoundingClientRect(),fit='fit' in canvas.dataset;const compact=fit?r.width<r.height:r.width<650;W=compact?(fit?Math.max(420,Math.min(600,Math.round(720*r.width/r.height))):600):fit?Math.max(1040,Math.min(2200,Math.round(720*r.width/r.height))):1040;wide=fit&&!compact;H=720;dpr=Math.min(window.devicePixelRatio||1,2);const height=fit?r.height:r.width/W*H;if(!fit&&Math.abs(r.height-height)>1)canvas.style.height=height+'px';const w=Math.round(r.width*dpr),h=Math.round(height*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}scale=w/W;VH=fit?Math.max(H,h/scale):H;oy=(VH-H)/2;}
  const near=(a,b,r)=>Math.hypot(a.x-b.x,a.y-b.y)<r;
  // The camera follows the manager. A one-room café keeps the whole hall in view with a signpost to
  // the terrace; once the café spreads out, a strip of the next locked area shows as a teaser.
