@@ -917,23 +917,32 @@ function tailClear(g,t,actor){tailCash(g,t);t.state='clean';t.claim=null;if(!tai
 function tailAction(g,kind,id,duration,dt,done){const old=g.action;if(!old||old.kind!==kind||old.id!==id)g.action={kind,id,p:0,duration};g.action.p+=dt;if(g.action.p>=duration){g.action=null;done();}return true;}
 function tailTake(g,actor,st,cap,only=null){const ready=st.ready.filter(it=>it.state==='ready'&&(!only||only.includes(it))).sort((a,b)=>tailUrgency(a)-tailUrgency(b));let n=0;for(const it of ready){if(actor.bag.length>=cap)break;it.state='carried';it.claim=null;actor.bag.push(it);n++;}st.ready=st.ready.filter(it=>it.state==='ready');
  if(st.kind==='kitchen')for(const it of tailTodoPastry(g)){if(actor.bag.length>=cap||st.case<=0)break;if(only&&!only.includes(it))continue;st.case--;it.state='carried';it.quality=88;it.claim=null;actor.bag.push(it);n++;}return n;}
-function tailPlayer(g,dt){const p=g.player,near=(spot,r=43)=>tailDistance(p,spot)<r,cap=tailCapacity(g);p.bag=p.bag.filter(v=>v.type==='tub'||v.state==='carried');g.prompt='walk';
- if(near(TAIL_SPOTS.stock)){g.prompt='beans';if(g.beans<tailBeanCap(g))return tailAction(g,'stock',0,1.1,dt,()=>{g.beans=tailBeanCap(g);tailNotice(g,'stocked');});g.action=null;return;}
- for(const d of TAIL_DROPS){if(d.zone>=g.zones||!near(d))continue;g.prompt='sink';if(p.bag.some(v=>v.type==='tub'))return tailAction(g,'wash',d.x,1,dt,()=>{const n=p.bag.filter(v=>v.type==='tub').length;p.bag=p.bag.filter(v=>v.type!=='tub');g.stats.washed+=n;tailNotice(g,'washed');});g.action=null;return;}
- if(near(TAIL_SPOTS.till)){g.prompt=g.till?.blocked?'no-table':'till';g.action=null;return;}
- if(near(TAIL_SPOTS.pickup,50)){const gr=g.groups.find(v=>v.special==='courier'&&v.state==='waiting');if(gr&&p.bag.some(v=>v.group===gr))return tailAction(g,'serve','courier',.5,dt,()=>tailServe(g,p,gr));}
- for(const s of g.spills){if(tailDistance(p,s)<30){g.prompt='spill';return tailAction(g,'mop',s.id,1.4,dt,()=>{g.spills.splice(g.spills.indexOf(s),1);g.stats.mopped++;tailNotice(g,'mopped');});}}
- for(const st of g.stations){if(!st.open||tailDistance(p,st)>52)continue;g.prompt=st.kind==='herb'?'herb':st.kind==='kitchen'?'kitchen':'brew';if(st.jam>0){g.prompt='jam';return tailAction(g,'fix',st.id,3,dt,()=>{st.jam=0;g.stats.fixed++;tailNotice(g,'fixed');});}
-  const can=st.ready.length||st.kind==='kitchen'&&st.case>0&&tailTodoPastry(g).length;if(can&&p.bag.length<cap)return tailAction(g,'pickup',st.id,.25,dt,()=>{tailTake(g,p,st,Math.min(cap,p.bag.length+1));tailNotice(g,'carry');});if(can)g.prompt='full';else if(st.kind==='coffee'&&g.beans<=0&&tailTodo(g,'coffee').length)g.prompt='no-beans';g.action=null;return;}
- // A buy spot comes before a table's serving circle: standing on one is always on purpose.
+// How close the manager must be for a spot to answer. Being near is enough, as at a shop counter; where
+// two reaches overlap (the kitchen's oven, sink and bean shelf) the nearest spot answers. A table answers
+// from any side, measured from its edge.
+const TAIL_REACH={station:80,till:70,stock:60,drop:60,pickup:70,spill:40,table:40};
+function tailTableGap(t,p){return Math.hypot(Math.max(0,Math.abs(p.x-t.x)-t.hw),Math.max(0,Math.abs(p.y-t.y)-t.hh));}
+function tailPlayer(g,dt){const p=g.player,near=(spot,r)=>tailDistance(p,spot)<r,cap=tailCapacity(g);p.bag=p.bag.filter(v=>v.type==='tub'||v.state==='carried');g.prompt='walk';
+ let best=null,bd=Infinity;const reach=(kind,spot,r)=>{const d=tailDistance(p,spot);if(d<r&&d<bd){bd=d;best={kind,spot};}};
+ reach('stock',TAIL_SPOTS.stock,TAIL_REACH.stock);for(const d of TAIL_DROPS)if(d.zone<g.zones)reach('drop',d,TAIL_REACH.drop);reach('till',TAIL_SPOTS.till,TAIL_REACH.till);for(const st of g.stations)if(st.open)reach('station',st,TAIL_REACH.station);
+ if(!tailInOffice(p))g.officeOpen=false;
+ // A buy spot comes first: standing on one is always on purpose, even within reach of the till or a table.
  const spot=tailBuySpots(g).find(v=>Math.abs(p.x-v.x)<v.hw&&Math.abs(p.y-v.y)<v.hh);if(!spot){if(!tailInOffice(p))g.buyHold=null;}else if(g.buyHold!==spot.id){if(!tailCanSpend(g,spot.price)){g.prompt='buy-poor';g.action=null;return;}g.prompt='buy';tailAction(g,'buy',spot.id,TAIL_BUY_TIME,dt,()=>{if(tailBuyOnFoot(g,spot)){g.buyHold=spot.id;g.alerts.push({kind:'bought',what:spot.id,time:g.time});}});if(g.action)g.action.cost=spot.price;return;}
- for(const t of g.tables){if(!t.open||!near({x:t.ax,y:t.ay},54))continue;tailCash(g,t);const gr=g.groups.find(v=>v.id===t.group);g.prompt='table';if(gr?.state==='waiting'&&p.bag.some(v=>v.group===gr))return tailAction(g,'serve',t.id,.5,dt,()=>{tailServe(g,p,gr);tailNotice(g,'served');});
+ if(best?.kind==='stock'){g.prompt='beans';if(g.beans<tailBeanCap(g))return tailAction(g,'stock',0,1.1,dt,()=>{g.beans=tailBeanCap(g);tailNotice(g,'stocked');});g.action=null;return;}
+ if(best?.kind==='drop'){const d=best.spot;g.prompt='sink';if(p.bag.some(v=>v.type==='tub'))return tailAction(g,'wash',d.x,1,dt,()=>{const n=p.bag.filter(v=>v.type==='tub').length;p.bag=p.bag.filter(v=>v.type!=='tub');g.stats.washed+=n;tailNotice(g,'washed');});g.action=null;return;}
+ if(best?.kind==='till'){g.prompt=g.till?.blocked?'no-table':'till';g.action=null;return;}
+ if(near(TAIL_SPOTS.pickup,TAIL_REACH.pickup)){const gr=g.groups.find(v=>v.special==='courier'&&v.state==='waiting');if(gr&&p.bag.some(v=>v.group===gr))return tailAction(g,'serve','courier',.5,dt,()=>tailServe(g,p,gr));}
+ for(const s of g.spills){if(tailDistance(p,s)<TAIL_REACH.spill){g.prompt='spill';return tailAction(g,'mop',s.id,1.4,dt,()=>{g.spills.splice(g.spills.indexOf(s),1);g.stats.mopped++;tailNotice(g,'mopped');});}}
+ if(best?.kind==='station'){const st=best.spot;g.prompt=st.kind==='herb'?'herb':st.kind==='kitchen'?'kitchen':'brew';if(st.jam>0){g.prompt='jam';return tailAction(g,'fix',st.id,3,dt,()=>{st.jam=0;g.stats.fixed++;tailNotice(g,'fixed');});}
+  const can=st.ready.length||st.kind==='kitchen'&&st.case>0&&tailTodoPastry(g).length;if(can&&p.bag.length<cap)return tailAction(g,'pickup',st.id,.25,dt,()=>{tailTake(g,p,st,Math.min(cap,p.bag.length+1));tailNotice(g,'carry');});if(can)g.prompt='full';else if(st.kind==='coffee'&&g.beans<=0&&tailTodo(g,'coffee').length)g.prompt='no-beans';g.action=null;return;}
+ let table=null,td=TAIL_REACH.table;for(const t of g.tables){if(!t.open)continue;const d=tailTableGap(t,p);if(d<td){td=d;table=t;}}
+ if(table){const t=table;tailCash(g,t);const gr=g.groups.find(v=>v.id===t.group);g.prompt='table';if(gr?.state==='waiting'&&p.bag.some(v=>v.group===gr))return tailAction(g,'serve',t.id,.5,dt,()=>{tailServe(g,p,gr);tailNotice(g,'served');});
   if(t.state==='dirty'){if(p.bag.length<cap)return tailAction(g,'clear',t.id,.8,dt,()=>{tailClear(g,t,p);tailNotice(g,'clear');});g.prompt='full';}g.action=null;return;}
  if(tailInOffice(p)){g.prompt='office';if(g.buyHold!=='office')return tailAction(g,'desk','office',TAIL_DESK_TIME,dt,()=>{g.officeOpen=true;g.buyHold='office';});g.action=null;return;}g.officeOpen=false;
  g.action=null;}
 // The till seats the first waiting group that fits a free table, so one big party never holds up
 // the lobby. The manager and a cashier each add a pair of paws.
-function tailTill(g,dt){const queued=g.groups.filter(v=>v.state==='queue'),gr=queued.find(v=>g.tables.some(t=>t.open&&t.state==='clean'&&t.seats>=v.size))??queued[0];let hands=tailDistance(g.player,TAIL_SPOTS.till)<43?1:0;for(const s of g.staff)if(s.role==='cashier'&&s.task?.kind==='till'&&!s.path.length)hands+=1/[1,.8,.65][g.training.cashier??0];
+function tailTill(g,dt){const queued=g.groups.filter(v=>v.state==='queue'),gr=queued.find(v=>g.tables.some(t=>t.open&&t.state==='clean'&&t.seats>=v.size))??queued[0];let hands=tailDistance(g.player,TAIL_SPOTS.till)<TAIL_REACH.till?1:0;for(const s of g.staff)if(s.role==='cashier'&&s.task?.kind==='till'&&!s.path.length)hands+=1/[1,.8,.65][g.training.cashier??0];
  if(!gr||!hands){g.till=gr?{group:gr.id,p:g.till?.group===gr.id?g.till.p:0,blocked:false}:null;return;}const fits=g.tables.some(t=>t.open&&t.state==='clean'&&t.seats>=gr.size);if(!fits){g.till={group:gr.id,p:0,blocked:true};return;}
  const p=(g.till?.group===gr.id?g.till.p:0)+dt*hands,need=.8+.1*gr.size;g.till={group:gr.id,p,need,blocked:false};if(p>=need){tailSeat(g,gr,g.lobbyCalm?TAIL_UPSELL[g.training.cashier??0]:0);g.till=null;}}
 
@@ -1385,9 +1394,9 @@ function tailRenderer(canvas,lang='zh',iso=null){
   minimap(g,span,goals);edges(goals);for(const t of g.tables)if(t.open)popScale('t'+t.id,g,true);for(const st of g.stations)popScale('s'+st.id,g,st.open);popReady=true;}
  // Floor spots, table markers, the walking path and the inspector's ring.
  function floorMarks(g,seen){
-  for(const [key,p]of Object.entries(TAIL_SPOTS)){if(key==='door'||key==='shop'&&wide||!seen(p))continue;if(key==='herb'&&!g.upgrades.herb||key==='kitchen'&&!g.upgrades.kitchen||key==='pickup'&&!g.groups.some(v=>v.special==='courier'))continue;marker(p.x,p.y,icons[key],near(p,g.player,43));}
-  for(const st of g.stations)if(st.zone>0&&st.open&&seen(st))marker(st.x,st.y,kindIcons[st.kind]??'✦',near(st,g.player,52));for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones&&seen(d))marker(d.x,d.y,icons.sink,near(d,g.player,43));
-  const mine=new Set(g.player.bag.map(v=>v.group).filter(Boolean));for(const t of g.tables){if(!t.open||!seen(t))continue;const gr=g.groups.find(v=>v.id===t.group),carry=gr&&mine.has(gr);if(carry||t.state==='dirty'||t.coins){marker(t.ax,t.ay,carry?'⬇':t.state==='dirty'?'🧽':'coin',carry||near({x:t.ax,y:t.ay},g.player,54));}}
+  for(const [key,p]of Object.entries(TAIL_SPOTS)){if(key==='door'||key==='shop'&&wide||!seen(p))continue;if(key==='herb'&&!g.upgrades.herb||key==='kitchen'&&!g.upgrades.kitchen||key==='pickup'&&!g.groups.some(v=>v.special==='courier'))continue;marker(p.x,p.y,icons[key],near(p,g.player,TAIL_REACH[{stock:'stock',sink:'drop',till:'till',pickup:'pickup'}[key]??'station']));}
+  for(const st of g.stations)if(st.zone>0&&st.open&&seen(st))marker(st.x,st.y,kindIcons[st.kind]??'✦',near(st,g.player,TAIL_REACH.station));for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones&&seen(d))marker(d.x,d.y,icons.sink,near(d,g.player,TAIL_REACH.drop));
+  const mine=new Set(g.player.bag.map(v=>v.group).filter(Boolean));for(const t of g.tables){if(!t.open||!seen(t))continue;const gr=g.groups.find(v=>v.id===t.group),carry=gr&&mine.has(gr);if(carry||t.state==='dirty'||t.coins){marker(t.ax,t.ay,carry?'⬇':t.state==='dirty'?'🧽':'coin',carry||tailTableGap(t,g.player)<TAIL_REACH.table);}}
   if(g.player.path.length){c.save();flat();c.setLineDash([2,9]);line([[g.player.x,g.player.y],...g.player.path.map(v=>[v.x,v.y])],'#6b896a88',3);const end=g.player.path.at(-1);ellipse(end.x,end.y,6,3,'#4d7450');c.restore();}
   if(g.inspector&&!g.inspector.done&&seen(g.inspector)){const ins=g.inspector,inside=Math.hypot(g.player.x-ins.x,g.player.y-ins.y)<180;c.save();flat();c.setLineDash([8,7]);c.beginPath();c.ellipse(ins.x,ins.y,180,80,0,0,Math.PI*2);stroke(inside?'#9edc7c':'#e2b23f88',2);c.restore();}}
  // Each group's bubble over its table or its leader: what they wait for, their patience, their mood.
