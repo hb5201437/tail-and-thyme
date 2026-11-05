@@ -2555,17 +2555,32 @@ const words={welcome:t('欢迎开店。走到点单台，接待第一桌客人�
  // café: the logo is drawn small and scaled up by a whole number with smoothing off, and the manager is
  // the same pixel figure that walks the floor, shifting between its two idle frames.
  function titleArt(el){const d=Math.min(2,window.devicePixelRatio||1),fit=cv=>{const r=cv.getBoundingClientRect();cv.width=Math.max(1,Math.round(r.width*d));cv.height=Math.max(1,Math.round(r.height*d));return cv.getContext('2d');};
-  const logo=$('.tail-title-logo',el);pixelLogo(logo,fit(logo));document.fonts?.load('700 40px Fredoka').then(()=>{if(logo.isConnected)pixelLogo(logo,logo.getContext('2d'));},()=>{});
+  const logo=$('.tail-title-logo',el);pixelLogo(logo,fit(logo));
   const hero=$('.tail-title-hero',el),h=fit(hero),P=TAIL_PIXEL,frames=['idle0','idle1'].map(frame=>P.drawCast('binturong',{role:'manager',frame,carry:['latte','croissant']}));let n=0;
   const paint=()=>{if(!hero.isConnected)return clearInterval(timer);const k=Math.max(1,Math.floor(Math.min(hero.width/P.CAST_W,hero.height/(P.CAST_H+2)))),w=P.CAST_W*k,ht=P.CAST_H*k;h.setTransform(1,0,0,1,0,0);h.clearRect(0,0,hero.width,hero.height);h.imageSmoothingEnabled=false;h.translate(Math.round((hero.width+w)/2),Math.round(hero.height-ht-k));h.scale(-1,1);h.drawImage(frames[n++%2],0,0,w,ht);};
   const timer=setInterval(paint,600);paint();}
- function pixelLogo(logo,c){const k=Math.max(2,Math.round(logo.height/72)),off=document.createElement('canvas');off.width=Math.ceil(logo.width/k);off.height=Math.ceil(logo.height/k);const o=off.getContext('2d');drawLogo(off,o);
-  const img=o.getImageData(0,0,off.width,off.height),px=img.data;for(let i=3;i<px.length;i+=4)px[i]=px[i]>120?255:0;o.putImageData(img,0,0);
-  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,logo.width,logo.height);c.imageSmoothingEnabled=false;c.drawImage(off,0,0,off.width*k,off.height*k);}
- function drawLogo(logo,c){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,logo.width,logo.height);const W=logo.width,H=logo.height,F='Fredoka,"Arial Rounded MT Bold",Arial,sans-serif',rows=[['Tail &',['#ffe873','#ffb627','#f07a12']],['Thyme',['#c8f27a','#6cc83f','#2f8a2a']]];
-  c.font=`700 100px ${F}`;const size=Math.min(H*.34,100*W*.84/c.measureText('Thyme').width),lead=size*1.04;c.save();c.translate(W/2,H*.42);c.rotate(-.05);c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';let py=-lead/2-size*.12;
-  for(const [text,[top,mid,low]]of rows){c.font=`700 ${size}px ${F}`;c.fillStyle='#4a230e';c.fillText(text,0,py+size*.09);c.lineWidth=size*.24;c.strokeStyle='#4a230e';c.strokeText(text,0,py);c.lineWidth=size*.1;c.strokeStyle='#fffaf0';c.strokeText(text,0,py);const f=c.createLinearGradient(0,py-size*.42,0,py+size*.42);f.addColorStop(0,top);f.addColorStop(.5,mid);f.addColorStop(1,low);c.fillStyle=f;c.fillText(text,0,py);py+=lead;}
-  const tag=size*.36,tw=tag*4.4,th=tag*1.5,ty=py-lead/2+size*.38;c.fillStyle='#4a230e';c.beginPath();c.roundRect(-tw/2-tag*.12,ty-th/2,tw+tag*.24,th+tag*.24,th);c.fill();c.fillStyle='#8a4a1e';c.beginPath();c.roundRect(-tw/2,ty-th/2,tw,th,th/2);c.fill();c.font=`700 ${tag}px ${F}`;c.letterSpacing=`${tag*.25}px`;c.fillStyle='#fffaf0';c.fillText('CAFÉ',tag*.12,ty+tag*.04);c.restore();}
+ // The logo is lettered in a small pixel font made for it: strokes two pixels thick, nine rows to the cap,
+ // y dropping two rows below. Each line gets a one-pixel dark outline, a drop shadow, three bands of colour
+ // from light to deep, and a pale top edge; CAFÉ sits in cream on a brown tag. The whole thing is drawn at
+ // one canvas pixel per art pixel and then scaled up by a whole number with smoothing off.
+ const LOGO_FONT={T:['#######','#######','..###..','..###..','..###..','..###..','..###..','..###..','..###..'],
+  a:['','','','.#####.','.....##','.######','##...##','##...##','.######'],i:['##','##','','##','##','##','##','##','##'],l:['##','##','##','##','##','##','##','##','##'],
+  '&':['.####...','##..##..','##..##..','.####...','.###..##','##.##.##','##..###.','##...##.','.####.##'],h:['##.....','##.....','##.....','######.','###..##','##...##','##...##','##...##','##...##'],
+  y:['','','','##...##','##...##','##...##','##...##','.######','.....##','.....##','######.'],m:['','','','#########.','##..##..##','##..##..##','##..##..##','##..##..##','##..##..##'],
+  e:['','','','.#####.','##...##','#######','##.....','##...##','.#####.'],' ':['...'],
+  C:['','','.####.','##..##','##....','##....','##....','##..##','.####.'],A:['','','.####.','##..##','##..##','######','##..##','##..##','##..##'],
+  F:['','','######','##....','##....','#####.','##....','##....','##....'],'É':['...##.','..##..','######','##....','##....','#####.','##....','##....','######']};
+ function logoLine(text){const gl=[...text].map(ch=>LOGO_FONT[ch]),w=gl.reduce((n,g)=>n+Math.max(...g.map(r=>r.length))+1,-1),h=Math.max(...gl.map(g=>g.length)),m=Array.from({length:h},()=>new Uint8Array(w));let x=0;
+  for(const g of gl){const gw=Math.max(...g.map(r=>r.length));g.forEach((r,y)=>{for(let i=0;i<r.length;i++)if(r[i]==='#')m[y][x+i]=1;});x+=gw+1;}return{w,h,m};}
+ function pixelLogo(logo,c){const rows=[[logoLine('Tail &'),['#fff3a0','#ffd23f','#f5a623','#e07b12']],[logoLine('Thyme'),['#e8ffb0','#a8e05a','#6cc83f','#3f9a2e']]],cafe=logoLine('CAFÉ'),ink='#3a1d0e',gap=2;
+  const W=Math.max(...rows.map(([r])=>r.w),cafe.w+8)+4,H=rows.reduce((n,[r])=>n+r.h+gap,0)+cafe.h+4+4,off=document.createElement('canvas');off.width=W;off.height=H;const o=off.getContext('2d'),px=(x,y,col)=>{o.fillStyle=col;o.fillRect(x,y,1,1);};
+  const stamp=({w,h,m},ox,oy,fill)=>{const at=(x,y)=>y>=0&&y<h&&x>=0&&x<w&&m[y][x];
+   for(let y=-1;y<=h+2;y++)for(let x=-1;x<=w;x++){if(at(x,y))continue;let edge=false,drop=false;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(at(x+dx,y+dy))edge=true;for(let dy=1;dy<=2;dy++)for(let dx=-1;dx<=1;dx++)if(at(x+dx,y-dy))drop=true;if(edge)px(ox+x,oy+y,ink);else if(drop)px(ox+x,oy+y,'#3a1d0e88');}
+   for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(m[y][x])px(ox+x,oy+y,fill(x,y,!at(x,y-1)));};
+  let y=1;rows.forEach(([r,[hi,a,b,d]],n)=>{stamp(r,Math.floor((W-r.w)/2)+(n?1:-2),y,(x,yy,top)=>top?hi:yy<3?a:yy<6?b:d);y+=r.h+gap;});
+  const tw=cafe.w+8,th=cafe.h-2+4,tx=Math.floor((W-tw)/2)+1,ty=y;o.fillStyle=ink;o.fillRect(tx+1,ty,tw-2,th);o.fillRect(tx,ty+1,tw,th-2);o.fillStyle='#8a5530';o.fillRect(tx+1,ty+1,tw-2,th-2);o.fillStyle='#6b3d1e';o.fillRect(tx+1,ty+th-2,tw-2,1);o.fillStyle='#3a1d0e88';o.fillRect(tx+1,ty+th,tw-2,1);
+  const cm=cafe.m;for(let yy=0;yy<cafe.h;yy++)for(let x=0;x<cafe.w;x++)if(cm[yy][x])px(tx+4+x,ty-1+yy,yy<2?'#ffe9b8':'#fff3d6');
+  const k=Math.max(1,Math.floor(Math.min(logo.width/W,logo.height/H)));c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,logo.width,logo.height);c.imageSmoothingEnabled=false;c.drawImage(off,Math.floor((logo.width-W*k)/2),Math.floor((logo.height-H*k)/2),W*k,H*k);}
  // The guide shows one order as icons, then a note for each rule this café has actually met,
  // so day 1 reads five icons and a line, and the notes grow as the café does.
  // The how-to page is a legend of the signs over the room, each drawn the way the game draws it.
