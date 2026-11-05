@@ -2180,7 +2180,7 @@ float pat(){vec2 u=tri();
    if(tb.coins)actors.add(sprite('coin',()=>P.coin()),tb.x-12,tb.y+4,h,{near:.5});}
   actors.done();}
  // ---- camera: follows the manager; the zoom is how many screen pixels one art pixel covers ----
- let zoom=0,picked=false,tx=null,tz=0,last=0,vpW=1,vpH=1,rt=null;const v3=new THREE.Vector3(),c0=new THREE.Vector3(),shift=new THREE.Vector2();
+ const LAG=1.6;let zoom=0,picked=false,tx=null,tz=0,lpx=0,lpz=0,last=0,vpW=1,vpH=1,rt=null;const v3=new THREE.Vector3(),c0=new THREE.Vector3(),shift=new THREE.Vector2();
  // A phone-sized screen (under 560 css px tall) shows about eleven floor units top to bottom, close enough to
  // tap; a bigger screen zooms out until the whole hall, about 700 by 420 art pixels, fits in view.
  const autoZoom=(w,h,cssH)=>cssH<560?Math.max(2,Math.round(h/(D*11))):Math.max(2,Math.floor(Math.min(w/700,h/420)));
@@ -2189,8 +2189,11 @@ float pat(){vec2 u=tri();
   // The small picture has one spare art pixel all round, so the finished picture can slide by part of a pixel.
   const bw=rw+2,bh=rh+2;if(!rt||rt.width!==bw||rt.height!==bh){rt?.dispose();rt=new THREE.WebGLRenderTarget(bw,bh,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthTexture:new THREE.DepthTexture(bw,bh)});rt.depthTexture.minFilter=rt.depthTexture.magFilter=THREE.NearestFilter;const u=post.material.uniforms;u.tCol.value=rt.texture;u.tDepth.value=rt.depthTexture;u.res.value.set(bw,bh);u.view.value.set(rw,rh);}
   Object.assign(cam,{left:-bw/D/2,right:bw/D/2,top:bh/D/2,bottom:-bh/D/2});cam.updateProjectionMatrix();
-  // The camera looks a little behind the manager, toward the counter, and stays over the open café.
-  const px=Math.max(5,Math.min(g.zones*TAIL_ZONE_W/U-5,X(g.player.x)+.6)),pz=Math.max(3,Math.min(deepAt(g.player.x)-4.5,Z(g.player.y)-2.2)),now=performance.now()/1000,dt=Math.min(.1,now-last);last=now;if(tx===null){tx=px;tz=pz;}else{const k=Math.min(1,dt*5);tx+=(px-tx)*k;tz+=(pz-tz)*k;}
+  // The camera looks a little behind the manager, toward the counter, and stays over the open café. It eases
+  // after the manager but never trails by more than LAG floor units, so at double or triple game speed it keeps
+  // pace and the manager stays near the middle instead of running off ahead; only a jump (a new day) glides.
+  const px=Math.max(5,Math.min(g.zones*TAIL_ZONE_W/U-5,X(g.player.x)+.6)),pz=Math.max(3,Math.min(deepAt(g.player.x)-4.5,Z(g.player.y)-2.2)),now=performance.now()/1000,dt=Math.min(.1,now-last);last=now;
+  if(tx===null){tx=px;tz=pz;}else{const k=1-Math.exp(-dt*5),jump=Math.hypot(px-lpx,pz-lpz)>4;tx+=(px-tx)*k;tz+=(pz-tz)*k;const lag=Math.hypot(px-tx,pz-tz);if(!jump&&lag>LAG){tx=px+(tx-px)*LAG/lag;tz=pz+(tz-pz)*LAG/lag;}}lpx=px;lpz=pz;
   // The scene is drawn from the camera put on a whole art pixel, so every pixel stays crisp; what that
   // rounding took off is given back by sliding the finished picture, so the camera still glides.
   cam.position.set(tx,0,tz).addScaledVector(toCam,80);cam.lookAt(tx,0,tz);c0.copy(cam.position);snap(cam.position);cam.updateMatrixWorld();c0.sub(cam.position).negate();shift.set(c0.dot(right)*D,c0.dot(upAxis)*D);post.material.uniforms.shift.value.copy(shift);
