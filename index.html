@@ -533,10 +533,14 @@ const TAIL_LOBBY=[{x:895,y:322},{x:945,y:322},{x:895,y:388},{x:945,y:388},{x:895
 // the two pieces of the front counter with a pass-through between them, and the banquette along the
 // left wall. No edge sits on a multiple of the walk grid's 22, or walkers catch on it.
 const TAIL_WALLS=[
- // terrace: the front wall with its gap, and two olive planters
- [1112,688,1510,740],[1610,688,2008,740],[1123,617,1163,657],[1963,617,2003,657],
- // garden: flower beds either side of the gate, and two tree trunks
- [2152,650,2550,740],[2650,650,3048,740],[2111,441,2135,465],[3070,441,3094,465],
+ // terrace: the front wall with its gap, the fountain in the middle, and olive planters in the front corners
+ [1112,688,1510,740],[1610,688,2008,740],[1495,385,1625,495],[1123,617,1163,657],[1963,617,2003,657],
+ // garden: the hedge either side of the gate, and the trunks of six trees, four of them lining the path
+ [2152,688,2550,740],[2650,688,3081,740],[2468,298,2492,322],[2708,298,2732,322],[2483,458,2507,482],[2693,458,2717,482],[2158,458,2182,482],[3060,318,3084,342],
+ // lakeside: a willow at the back of the deck and one in the corner
+ [3627,238,3651,262],[3169,529,3193,553],
+ // lakeside: the fire pit
+ [3334,448,3386,492],
  // hall
  [316,250,324,372],[316,420,324,610],[316,700,324,740],[72,356,324,364],[72,536,324,544],[120,250,250,300],[266,296,307,350],[62,664,202,740],[115,609,165,651],[251,679,273,701],[395,247,470,285],[672,247,904,285],[324,436,338,599]];
 const T=(x,y,seats,geom=seats)=>({x,y,seats,geom,zone:Math.floor(x/TAIL_ZONE_W)});
@@ -544,16 +548,25 @@ const TAIL_TABLES=[
  // Hall: two tables for two on the banquette along the left wall, three four-seaters in the middle and
  // three more tables for two near the front, all with room to walk between them.
  T(380,470,2,'2l'),T(380,550,2,'2l'),T(560,400,4),T(740,400,4),T(652,660,2),T(650,560,4),T(500,660,2),T(802,660,2),
- // Terrace: bistro tables in three staggered rows, twos and fours mixed, with a clear way down the middle
- // to the gap in the front wall.
- ...[[140,300,4],[320,300,2],[500,300,2],[680,300,4],[860,300,4],[230,450,2],[410,450,2],[592,450,4],[770,450,4],[950,450,2],[142,594,2],[320,592,4],[720,592,4],[900,594,2]].map(([x,y,n])=>T(1040+x,y,n)),
- // Garden: long party tables under the trees up top, four-seaters below, the gravel path to the gate
- // between them.
- ...[[170,300],[420,300],[683,300],[930,300],[800,460]].map(([x,y])=>T(2080+x,y,6)),...[[160,460],[340,460],[640,460],[160,600],[340,600],[700,600],[880,600]].map(([x,y])=>T(2080+x,y,4)),
- // Lakeside deck: little tables for two either side of the pier.
- ...[140,322,702,880].flatMap(x=>[280,370,461,550].map(y=>T(3120+x,y,2)))];
+ // Terrace: a lounge corner of sofas on the left, a bar ledge with stools along the back, and bistro
+ // tables round the fountain, the way down to the gap in the front wall kept clear.
+ ...[[170,382,4,'lounge4'],[470,234,2,'bar2'],[580,234,2,'bar2'],[860,300,4],[192,590,4,'lounge4'],[690,234,2,'bar2'],[702,440,2],[860,470,4],[342,440,4],[692,600,2]].map(([x,y,n,k])=>T(1040+x,y,n,k)),
+ // Garden: a long table and a big round one under the trees, picnic blankets on the lawn in front, and
+ // a few four-seaters on the right, either side of the gravel path.
+ ...[[192,300,6],[840,300,6,'round6'],[200,480,6,'blanket6'],[780,470,6],[200,640,6,'blanket6'],[360,600,4,'blanket4'],[660,620,4,'blanket4'],[880,622,4],[962,470,4]].map(([x,y,n,k])=>T(2080+x,y,n,k)),
+ // Lakeside: log benches round a fire pit, deck chairs at the railing facing the water, and little round
+ // tables near the willows.
+ ...[[242,390,'log2N'],[152,480,'log2W'],[330,480,'log2E'],[642,560,'deck2'],[782,560,'deck2'],[922,560,'deck2'],[152,300],[382,322],[702,300],[872,330]].map(([x,y,k])=>T(3120+x,y,2,k))];
 // A banquette table ('2l') seats both guests on its left, side by side, and is approached from its right.
-const TAIL_TABLE_GEOM={'2l':{hw:30,hh:20,seats:[[-40,-12],[-40,12]],approach:[50,0]},2:{hw:30,hh:20,seats:[[-18,-30],[18,-30]]},4:{hw:42,hh:26,seats:[[-54,-2],[54,-2],[-18,-38],[18,-38]]},6:{hw:76,hh:32,seats:[[-88,-2],[88,-2],[-48,-42],[-16,-42],[16,-42],[48,-42]]}};
+// The outdoor areas mix other kinds of seat; each is a small solid piece with its seats round it outside
+// that piece: a bar ledge with two stools on its near side ('bar2'), a low table with sofas on two sides
+// ('lounge4'), a picnic basket on a blanket ('blanket4', 'blanket6'), a big round table ('round6'), a side
+// table between two deck chairs facing the lake ('deck2'), and log benches round a fire pit, sat on from the
+// side away from the fire ('log2N', 'log2W', 'log2E').
+const TAIL_TABLE_GEOM={bar2:{hw:32,hh:10,seats:[[-15,26],[15,26]],approach:[0,52]},lounge4:{hw:24,hh:16,seats:[[-52,-6],[-52,18],[-12,-40],[16,-40]],approach:[50,12]},
+ blanket4:{hw:14,hh:9,seats:[[-34,4],[34,4],[-14,-22],[14,-22]],approach:[0,36]},blanket6:{hw:16,hh:10,seats:[[-44,-2],[44,-2],[-26,-26],[0,-30],[26,-26],[-26,22]],approach:[28,40]},
+ round6:{hw:36,hh:24,seats:[[-54,-2],[54,-2],[-30,-34],[0,-40],[30,-34],[-30,30]],approach:[32,46]},deck2:{hw:10,hh:8,seats:[[-26,-4],[26,-4]],approach:[0,-30]},
+ log2N:{hw:28,hh:7,seats:[[-12,-18],[12,-18]],approach:[0,-44]},log2W:{hw:7,hh:28,seats:[[-18,-12],[-18,12]],approach:[-44,0]},log2E:{hw:7,hh:28,seats:[[18,-12],[18,12]],approach:[44,0]},'2l':{hw:30,hh:20,seats:[[-40,-12],[-40,12]],approach:[50,0]},2:{hw:30,hh:20,seats:[[-18,-30],[18,-30]]},4:{hw:42,hh:26,seats:[[-54,-2],[54,-2],[-18,-38],[18,-38]]},6:{hw:76,hh:32,seats:[[-88,-2],[88,-2],[-48,-42],[-16,-42],[16,-42],[48,-42]]}};
 // Producers. Outer zones bring their own outdoor bar, grill or cold-drinks boat.
 const TAIL_STATIONS=[{kind:'coffee',x:480,zone:0},{kind:'herb',x:660,zone:0},{kind:'kitchen',x:160,zone:0},{kind:'coffee',x:1340,zone:1},{kind:'kitchen',x:2380,zone:2},{kind:'herb',x:3420,zone:3}];
 // Dirty tubs go to the sink, or to the dish cart in each outer zone.
@@ -1501,7 +1514,7 @@ function tailRenderer(canvas,lang='zh',iso=null){
  // In the 3D view, flat() lays what follows on the floor and stand(x,y) stands it upright at that floor spot,
  // keeping its offsets in world pixels. Without iso both leave the canvas as it is.
  const flat=()=>{if(iso)c.setTransform(...iso.ground());},stand=(x,y)=>{if(!iso)return;const p=iso.at(x,y),s=iso.s();c.setTransform(s,0,0,s,p.x-s*x,p.y-s*y);},onScreen=(x,y)=>iso?iso.seen(x,y,-140):x>=camera-140&&x<=camera+W+140;
- function marker(x,y,icon,active=false){c.save();flat();if(active){ellipse(x,y,33,15,'#fff4c044');stroke('#f2cf6a',2);}else c.globalAlpha=.8;stand(x,y);badge(icon,x,y+33,active);c.restore();}
+ function marker(x,y,icon,active=false){c.save();if(!active)c.globalAlpha=.8;stand(x,y);badge(icon,x,y+33,active);c.restore();}
  const coarse=()=>!!globalThis.matchMedia?.('(pointer:coarse)').matches;
  // Scene icons scale up when the canvas is drawn small, so they never shrink below about 12 css px.
  const grow=()=>Math.max(1,Math.min(1.8,.68/(scale/dpr||1)));
@@ -1538,8 +1551,8 @@ function tailRenderer(canvas,lang='zh',iso=null){
   for(const [key,p]of Object.entries(TAIL_SPOTS)){if(key==='door'||key==='shop'&&wide||!seen(p))continue;if(key==='herb'&&!g.upgrades.herb||key==='kitchen'&&!g.upgrades.kitchen||key==='pickup'&&!g.groups.some(v=>v.special==='courier'))continue;marker(p.x,p.y,icons[key],near(p,g.player,TAIL_REACH[{stock:'stock',sink:'drop',till:'till',pickup:'pickup'}[key]??'station']));}
   for(const st of g.stations)if(st.zone>0&&st.open&&seen(st))marker(st.x,st.y,kindIcons[st.kind]??'sparkle',near(st,g.player,TAIL_REACH.station));for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones&&seen(d))marker(d.x,d.y,icons.sink,near(d,g.player,TAIL_REACH.drop));
   const mine=new Set(g.player.bag.map(v=>v.group).filter(Boolean));for(const t of g.tables){if(!t.open||!seen(t))continue;const gr=g.groups.find(v=>v.id===t.group),carry=gr&&mine.has(gr);if(carry||t.state==='dirty'||t.coins){marker(t.ax,t.ay,carry?'down':t.state==='dirty'?'sponge':'coin',carry||tailTableGap(t,g.player)<TAIL_REACH.table);}}
-  if(g.player.path.length){c.save();flat();c.setLineDash([2,9]);line([[g.player.x,g.player.y],...g.player.path.map(v=>[v.x,v.y])],'#6b896a88',3);const end=g.player.path.at(-1);ellipse(end.x,end.y,6,3,'#4d7450');c.restore();}
-  if(g.inspector&&!g.inspector.done&&seen(g.inspector)){const ins=g.inspector,inside=Math.hypot(g.player.x-ins.x,g.player.y-ins.y)<180;c.save();flat();c.setLineDash([8,7]);c.beginPath();c.ellipse(ins.x,ins.y,180,80,0,0,Math.PI*2);stroke(inside?'#9edc7c':'#e2b23f88',2);c.restore();}}
+  if(g.player.path.length){c.save();flat();c.setLineDash([2,9]);line([[g.player.x,g.player.y],...g.player.path.map(v=>[v.x,v.y])],'#6b896a88',3);c.restore();}
+  if(g.inspector&&!g.inspector.done&&seen(g.inspector)){const ins=g.inspector,inside=Math.hypot(g.player.x-ins.x,g.player.y-ins.y)<180;if(!inside){stand(ins.x,ins.y);ico('down',ins.x,ins.y-118+Math.sin(g.time*4)*4,26*grow());}}}
  // Each group's bubble over its table or its leader: what they wait for, their patience, their mood.
  function heads(g,seen){
   for(const gr of g.groups){const lead=gr.members[0];if(!seen(lead))continue;const t=g.tables[gr.table],seated=t&&(gr.state==='waiting'||gr.state==='eating'),at=seated?{x:t.x,y:t.y-(iso?122:62)}:{x:lead.x,y:lead.y-78};seated?stand(t.x,t.y):stand(lead.x,lead.y);if(gr.rare&&!gr.angry&&gr.state!=='leaving'){rr(at.x-19,at.y-70,38,28,14);fill('#4a1f45e8');stroke('#ff8fd0',1.5);ico('sparkle',at.x,at.y-56,22);}
@@ -1548,18 +1561,20 @@ function tailRenderer(canvas,lang='zh',iso=null){
    else if(gr.state==='waiting'){const left=gr.items.filter(i=>i.state!=='served');bubble(at.x,at.y,left.slice(0,4).map(i=>i.type),gr.patience/gr.max,tone);const tag={critic:'pen',courier:'scooter',party:'cake',vip:'crown'}[gr.special];if(tag){ellipse(at.x,at.y-50,15,15,'#fff1c2');stroke('#d9a640',2);ico(tag,at.x,at.y-50,22);}}
    else if(gr.state==='eating')bubble(at.x,at.y,[],1,tone,'heart');else if(gr.state==='leaving'&&!gr.angry)bubble(at.x,at.y,[],1,'plain','smile');else if(gr.angry)bubble(at.x,at.y,[],1,'angry','angry');}}
  // The till's progress ring and why it is stuck; the ring and badge of what the manager is doing.
+ // Progress is a short bar over the head of whoever is working, never a ring on the floor.
+ function bar(x,y,p){const k=grow(),w=46*k,h=8*k;rr(x-w/2,y,w,h,h/2);fill('#1d3b2fe6');rr(x-w/2+1.5*k,y+1.5*k,Math.max(2,(w-3*k)*Math.min(1,p)),h-3*k,(h-3*k)/2);fill('#f8d571');}
  function rings(g){
-  c.save();if(g.till&&!g.till.blocked&&g.till.p>0){flat();c.beginPath();c.ellipse(TAIL_SPOTS.till.x,TAIL_SPOTS.till.y+2,29,13,0,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,g.till.p/g.till.need));stroke('#f8d571',4);}else if(g.till?.blocked&&(iso||camera<600)){stand(TAIL_SPOTS.till.x,TAIL_SPOTS.till.y);pill(tailNoSeat(g)?['sponge','table']:['table','hourglass'],TAIL_SPOTS.till.x,TAIL_SPOTS.till.y-112,11*grow(),'#8a3b2ce6','#fff3e0');}
-  if(g.action){const a=g.action,word={stock:icons.stock,wash:icons.sink,serve:'down',clear:'sponge',pickup:'hand',fix:'wrench',mop:'mop'}[a.kind];flat();c.beginPath();c.ellipse(g.player.x,g.player.y+2,29,13,0,-Math.PI/2,-Math.PI/2+Math.PI*2*a.p/a.duration);stroke('#f8d571',4);stand(g.player.x,g.player.y);if(word&&a.duration>.4)badge(word,g.player.x,g.player.y+30,true);}c.restore();}
+  c.save();if(g.till&&!g.till.blocked&&g.till.p>0){stand(TAIL_SPOTS.till.x,TAIL_SPOTS.till.y);bar(TAIL_SPOTS.till.x,TAIL_SPOTS.till.y-96,g.till.p/g.till.need);}else if(g.till?.blocked&&(iso||camera<600)){stand(TAIL_SPOTS.till.x,TAIL_SPOTS.till.y);pill(tailNoSeat(g)?['sponge','table']:['table','hourglass'],TAIL_SPOTS.till.x,TAIL_SPOTS.till.y-112,11*grow(),'#8a3b2ce6','#fff3e0');}
+  if(g.action){const a=g.action,word={stock:icons.stock,wash:icons.sink,serve:'down',clear:'sponge',pickup:'hand',fix:'wrench',mop:'mop'}[a.kind];stand(g.player.x,g.player.y);bar(g.player.x,g.player.y-96,a.p/a.duration);if(word&&a.duration>.4)badge(word,g.player.x,g.player.y-124,true);}c.restore();}
  function effects(g){
   for(const e of g.effects){if(e.kind==='burst'){burst(e);continue;}if(e.kind==='coin'||e.kind==='craft'||e.kind==='combo'){popText(e);continue;}if(e.kind==='rare'){c.save();stand(e.x,e.y);const k=3.2-e.life;for(let i=0;i<14;i++){const sx=e.x+((i*37)%120-60),sy=e.y-30+((k*140+i*23)%160);c.globalAlpha=Math.max(0,Math.min(1,e.life-.2));ellipse(sx,sy,5,5,'#f2cf6a');stroke('#a8802a',1);}c.globalAlpha=Math.min(1,e.life);row([e.icon,e.text],e.x,e.y,30,'#ffd23f',true,'#4a1f45');c.restore();continue;}c.save();stand(e.x,e.y);c.globalAlpha=Math.min(1,e.life);row([e.icon,e.text],e.x,e.y,e.kind==='task'?20:18,e.kind==='coin'||e.kind==='task'?'#856226':'#b87756',true,'#fff6e2');c.restore();}}
  // The manager is marked by the arrow above the head (you); the floor under the feet stays clear.
- function halo(g){flat();const p=g.player;
-  // Serving the founder earns the manager a second, sparkling gold ring.
-  if(g.rares?.founder>0){c.save();c.setLineDash([3,6]);c.lineDashOffset=-g.time*12;c.beginPath();c.ellipse(p.x,p.y+2,40,15,0,0,Math.PI*2);stroke('#f6d36a',2.2);c.restore();}
-  for(const gr of g.groups){if(!gr.rare||gr.angry||gr.state==='leaving')continue;const m=gr.members[0];if(m.x<camera-140||m.x>camera+W+140)continue;const glow=c.createRadialGradient(m.x,m.y,4,m.x,m.y,60);glow.addColorStop(0,'rgba(255,170,220,.55)');glow.addColorStop(1,'rgba(255,170,220,0)');c.beginPath();c.ellipse(m.x,m.y+2,60,22,0,0,Math.PI*2);c.fillStyle=glow;c.fill();c.save();c.setLineDash([5,5]);c.lineDashOffset=g.time*16;c.beginPath();c.ellipse(m.x,m.y+2,34,13,0,0,Math.PI*2);stroke('#ff8fd0',2.4);c.restore();}}
+ function halo(g){const p=g.player,k=grow();
+  // Serving the founder earns the manager a twinkle over the head.
+  if(g.rares?.founder>0){stand(p.x,p.y);ico('sparkle',p.x+22,p.y-92+Math.sin(g.time*3)*3,14*k);}
+  for(const gr of g.groups){if(!gr.rare||gr.angry||gr.state==='leaving')continue;const m=gr.members[0];if(m.x<camera-140||m.x>camera+W+140)continue;stand(m.x,m.y);for(let i=0;i<3;i++){const a=g.time*2+i*2.1;ico('sparkle',m.x+Math.cos(a)*24,m.y-70+Math.sin(a)*10,(10+4*Math.sin(g.time*5+i))*k);}}}
  function spotlight(g){const gr=g.groups.find(v=>v.rare&&g.time-v.born<4.5&&!v.angry);if(!gr)return;const m=gr.members[0],k=g.time-gr.born,a=.5*Math.min(1,k/.4,(4.5-k)/1);c.save();c.beginPath();c.rect(camera-60,-60,W+120,H+120);c.ellipse(m.x,m.y-40,95,120,0,0,Math.PI*2);c.fillStyle=`rgba(12,8,20,${a.toFixed(3)})`;c.fill('evenodd');for(let i=0;i<10;i++){const ang=i/10*Math.PI*2+k*1.5,r=70+12*Math.sin(k*4+i);ico('sparkle',m.x+Math.cos(ang)*r,m.y-40+Math.sin(ang)*r*1.2,12+(i%3)*4);}c.restore();}
- function you(g){stand(g.player.x,g.player.y);const p=g.player,y=p.y-102+Math.sin(g.time*4)*4;ico('down',p.x,y-14,30*grow());}
+ function you(g){if(g.action&&g.action.duration>.4)return;stand(g.player.x,g.player.y);const p=g.player,y=p.y-102+Math.sin(g.time*4)*4;ico('down',p.x,y-14,30*grow());}
  // Where the manager is needed next: tables waiting on what they carry, the courier, jammed machines.
  function targets(g){const out=[],mine=new Set(g.player.bag.map(v=>v.group).filter(Boolean));for(const gr of mine){const t=g.tables[gr.table],p=gr.special==='courier'?TAIL_SPOTS.pickup:t&&{x:t.ax,y:t.ay};if(p)out.push({x:p.x,y:p.y,kind:'deliver',label:gr.special==='courier'?icons.pickup:'plate',num:gr.special==='courier'?null:String(gr.table+1).padStart(2,'0')});}
   for(const st of g.stations)if(st.jam>0)out.push({x:st.x,y:TAIL_BAR_Y+10,kind:'jam',label:'wrench'});for(const gr of g.groups)if(gr.rare&&!gr.angry&&gr.state!=='leaving'){const m=gr.members[0];out.push({x:m.x,y:m.y,kind:'rare',label:'sparkle'});}const job=nextJob(g);if(job)out.push(job);return out.sort((a,b)=>Math.abs(a.x-g.player.x)-Math.abs(b.x-g.player.x));}
@@ -1606,8 +1621,8 @@ function tailRenderer(canvas,lang='zh',iso=null){
   if(tagged){const late=age>=TAIL_PICKUP_NUDGE,nums=[...new Set(wait.filter(it=>it.group.special!=='courier').map(it=>it.group.table+1))],go=wait.some(it=>it.group.special==='courier'),label=['hand',...nums.slice(0,3).map(n=>String(n).padStart(2,'0')),nums.length>3?`+${nums.length-3}`:null,go?'scooter':null],y=TOP+30+(late?Math.sin(g.time*6)*3:0);pill(label,st.x,y,11*k,late?'#f2cf6a':'#1d3b2fe6',late?'#3a2a1a':'#f6e6b8');}
   const pastry=st.kind==='kitchen'?tailPastryStep(g):null;if(pastry?.st===st&&Math.hypot(g.player.x-st.x,g.player.y-st.y)>=52){if(pastry.step==='bake')pill(['fire'],st.x-62,TOP+8+Math.sin(g.time*6)*3,11*k,'#e98b4a','#2a1a10');else if(pastry.step==='take'&&!tagged)pill(['kitchen','hand'],st.x+8,TOP-4+Math.sin(g.time*6)*3,11*k,'#f2cf6a','#3a2a1a');}}}
  function onTop(g,list){pickupTags(g);const bob=Math.sin(g.time*5)*4,d=list.find(v=>v.kind==='deliver');if(d){const pts=[[g.player.x,g.player.y],[d.x,d.y]];c.save();flat();c.lineCap='round';c.setLineDash([12,10]);c.lineDashOffset=-g.time*45;line(pts,'#3a2a1a77',8);line(pts,'#f2cf6a',4.5);c.restore();}
-  for(const p of list){if(!inView(p)||p.kind==='rare')continue;flat();const col=tone(p.kind),big=p.kind==='deliver'||p.kind==='jam'||p.kind==='critic',s=big?1.2+.12*Math.sin(g.time*7):1;if(big)ellipse(p.x,p.y,40*s,19*s,col+'44');c.save();c.lineWidth=3.5;c.strokeStyle='#3a2a1acc';c.beginPath();c.ellipse(p.x,p.y,38*s,17*s,0,0,Math.PI*2);c.stroke();c.setLineDash([7,5]);c.lineDashOffset=-g.time*20;c.strokeStyle=col;c.lineWidth=2.5;c.stroke();c.restore();
-   stand(p.x,p.y);const y=p.y-46+bob,k=grow()*(coachOn?1.3:1),list=[p.label,p.num],h=42*k,w=Math.max(h,rowW(list,17*k)+20*k);ico('down',p.x,y-8*k,26*k);rr(p.x-w/2,y-18*k-h,w,h,h/2);fill('#1d3b2fe6');stroke(col,2.5);row(list,p.x,y-18*k-h/2,17*k,'#f6e6b8');}}
+  for(const p of list){if(!inView(p)||p.kind==='rare')continue;const col=tone(p.kind),big=p.kind==='deliver'||p.kind==='jam'||p.kind==='critic';
+   stand(p.x,p.y);const y=p.y-46+bob,k=grow()*(coachOn?1.3:1)*(big?1.12+.08*Math.sin(g.time*7):1),list=[p.label,p.num],h=42*k,w=Math.max(h,rowW(list,17*k)+20*k);ico('down',p.x,y-8*k,26*k);rr(p.x-w/2,y-18*k-h,w,h,h/2);fill('#1d3b2fe6');stroke(col,2.5);row(list,p.x,y-18*k-h/2,17*k,'#f6e6b8');}}
  // Off-screen targets get an arrow at the screen edge with the area name; tapping it walks there.
  let arrows=[],coachOn=false;
  // Tables and counter equipment that open while the café is on screen pop in with a little overshoot;
@@ -1769,7 +1784,7 @@ const grinder=()=>propCanvas(g=>{g.box(-.24,0,-.28,.24,.06,.28,PAL.ink);g.box(-.
 function squareTable(top=PAL.birch,leg=PAL.oakDk,apron=PAL.oak){return propCanvas(g=>{g.shadow(-1,-.95,1,.95);for(const[a,b]of[[-1,-1],[1,-1],[-1,1],[1,1]])g.box(a*.8-.05,0,b*.72-.05,a*.8+.05,.86,b*.72+.05,leg,{edge:false});g.box(-.84,.78,-.76,.84,.86,.76,apron);g.box(-1,.86,-.95,1,.96,.95,top);
  const{put,P}=g;for(let z=-.8;z<.9;z+=.32){const[a,b]=P(-.98,.96,z),[c,d]=P(.98,.96,z);for(let t=0;t<=1;t+=.02)put(a+(c-a)*t,b+(d-b)*t,shade(light(top),.35));}
  cupAt(g,-.45,.96,-.2);cupAt(g,.45,.96,.3);g.cyl(.3,-.35,.06,.96,1.2,PAL.white);g.blob(.3,1.32,-.35,.07,'#e9a23b');g.cyl(-.2,.35,.07,.96,1.06,'#efe4c4',{top:'#f6e3b6'});dot(g,[-.2,1.1,.35],'#ffcf6a');dot(g,[-.2,1.15,.35],'#fff1c2');});}
-function roundTable(top=PAL.white,base=PAL.char){return propCanvas(g=>{g.shadow(-.7,-.7,.7,.7);g.cyl(0,0,.36,0,.05,base);g.cyl(0,0,.05,.05,.88,base);g.cyl(0,0,.7,.88,.95,top,{top:light(top,.4)});cupAt(g,-.25,.95,.15);g.cyl(.18,-.18,.06,.95,1.18,PAL.white);g.blob(.18,1.3,-.18,.07,'#e9a23b');g.cyl(.2,.25,.06,.95,1.04,'#efe4c4',{top:'#f6e3b6'});dot(g,[.2,1.08,.25],'#ffcf6a');dot(g,[.2,1.13,.25],'#fff1c2');});}
+function roundTable(top=PAL.white,base=PAL.char,r=.7){return propCanvas(g=>{g.shadow(-r,-r,r,r);g.cyl(0,0,r*.52,0,.05,base);g.cyl(0,0,.05+r*.03,.05,.88,base);g.cyl(0,0,r,.88,.95,top,{top:light(top,.4)});cupAt(g,-.25,.95,.15);g.cyl(.18,-.18,.06,.95,1.18,PAL.white);g.blob(.18,1.3,-.18,.07,'#e9a23b');g.cyl(.2,.25,.06,.95,1.04,'#efe4c4',{top:'#f6e3b6'});dot(g,[.2,1.08,.25],'#ffcf6a');dot(g,[.2,1.13,.25],'#fff1c2');});}
 function chair(face,c,wood=PAL.oak,legs=PAL.oakDk){return propCanvas(g=>{const back={n:[-.3,.24,.3,.32],s:[-.3,-.32,.3,-.24],e:[-.32,-.3,-.24,.3],w:[.24,-.3,.32,.3]}[face];g.shadow(-.32,-.32,.32,.32);
  const legs=[[-.24,-.24],[.24,-.24],[-.24,.24],[.24,.24]];for(const[a,b]of legs)g.box(a-.03,0,b-.03,a+.03,.5,b+.03,legs,{edge:false});
  const drawBack=()=>{const[x0,z0,x1,z1]=back;g.box(x0,.5,z0,x1,1.12,z1,wood);for(const k of[.25,.5,.75])g.box(x0+(x1-x0)*(face==='n'||face==='s'?k:0)-(face==='n'||face==='s'?.015:0),.55,z0+(z1-z0)*(face==='e'||face==='w'?k:0)-(face==='e'||face==='w'?.015:0),x0+(x1-x0)*(face==='n'||face==='s'?k:1)+(face==='n'||face==='s'?.015:0),1.04,z0+(z1-z0)*(face==='e'||face==='w'?k:1)+(face==='e'||face==='w'?.015:0),shade(wood,.5),{edge:false});};
@@ -1827,11 +1842,23 @@ const fullCup=t=>propCanvas(g=>{g.cyl(0,0,.1,0,.02,PAL.white);g.cyl(0,0,.06,.02,
 // Outdoor pieces: a lantern post, a clump of flowers, a garden tree, an olive in a planter, reeds and a rowing boat.
 const lampPost=()=>propCanvas(g=>{g.cyl(0,0,.16,0,.06,PAL.char);line3(g,[0,.06,0],[0,2.3,0],PAL.char,2);g.box(-.13,2.3,-.13,.13,2.62,.13,'#ffd98a',{top:'#3a3f41'});g.box(-.16,2.62,-.16,.16,2.68,.16,PAL.char);dot(g,[0,2.46,.14],'#fff3cf');});
 const flowers=c=>propCanvas(g=>{for(let i=0;i<9;i++){const a=i*2.1,r=.08+(i%3)*.12;g.blob(Math.cos(a)*r,.16+(i%2)*.06,Math.sin(a)*r,.11,LEAF[i%3],.7);}for(let i=0;i<7;i++){const a=i*2.6+.5,r=.06+(i%3)*.13;g.blob(Math.cos(a)*r,.3+(i%2)*.05,Math.sin(a)*r,.06,i%3?c:'#fff3d6',1);}});
-const tree=(s=1)=>propCanvas(g=>{g.shadow(-.9*s,-.6*s,.9*s,.6*s);g.cyl(0,0,.16*s,0,1.5*s,'#7a5a3e');for(let i=0;i<16;i++){const a=i*2.4,r=(.2+(i%4)*.18)*s;g.blob(Math.cos(a)*r,(1.5+(i%5)*.22)*s,Math.sin(a)*r,.42*s,LEAF[i%3],.8);}});
+const tree=(s=1,leaves=LEAF,droop=0)=>propCanvas(g=>{g.shadow(-.9*s,-.6*s,.9*s,.6*s);g.cyl(0,0,.16*s,0,1.5*s,'#7a5a3e');for(let i=0;i<16;i++){const a=i*2.4,r=(.2+(i%4)*.18+droop*.2)*s;g.blob(Math.cos(a)*r,(1.5+(i%5)*.22-droop*(i%4)*.18)*s,Math.sin(a)*r,.42*s,leaves[i%3],.8+droop*.5);}});
 const olive=()=>propCanvas(g=>{g.box(-.4,0,-.4,.4,.55,.4,'#c98a6b');g.box(-.36,.55,-.36,.36,.58,.36,'#5a4632',{edge:false});line3(g,[0,.58,0],[0,1.4,0],'#7a6a55',2);for(let i=0;i<11;i++){const a=i*2.4,r=.12+(i%3)*.14;g.blob(Math.cos(a)*r,1.25+(i%4)*.12,Math.sin(a)*r,.2,i%2?'#9aa98a':'#80927a',.75);}});
 const reeds=()=>propCanvas(g=>{for(let i=0;i<7;i++){const x=(i-3)*.09,z=(i%2)*.08,h=.6+(i%3)*.18;line3(g,[x,0,z],[x+.04,h,z],i%2?'#7f9a5e':'#93ad6a');if(i%2)g.blob(x+.04,h,z,.04,'#7a5a3e',1.6);}});
 const boat=()=>propCanvas(g=>{g.box(-.45,0,-1.1,.45,.35,1.1,'#b0573f',{top:'#8a4a36'});g.box(-.36,.2,-.95,.36,.36,.95,'#d8c39a',{edge:false});g.box(-.4,.3,-.12,.4,.4,.12,'#b98a5a');});
-return{lampPost,flowers,tree,olive,reeds,boat,drawCast,CAST_W,CAST_H,SWEATERS,APRON,shade,light,ink,propCanvas,S,espresso,grinder,squareTable,roundTable,chair,plant,oven,breadRack,dishUnit,prepIsland,fridge,beanShelf,herbBar,cups,pickup,pastryCase,pos,post,aFrame,coffeeTable,floorLamp,desk,officeChair,cabinet,sconce,beanJars,bakeStation,dishCart,coin,dirtyCup,fullCup,PAL};})();
+// Outdoor seats: a bar ledge with two stools on its near side, a sofa along x or z, a low table, a picnic
+// blanket and basket, a deck chair and side table, a log bench along x or z, and a stone fire pit.
+const barUnit=()=>propCanvas(g=>{g.shadow(-.9,-.2,.9,1.2);g.box(-.85,0,-.14,.85,.98,.14,'#8d6440');g.box(-.92,.98,-.22,.92,1.05,.22,PAL.birch);for(const x of[-.375,.375]){line3(g,[x,0,.97],[x,.72,.97],PAL.char,2);g.cyl(x,.97,.18,.72,.8,'#c46f52',{top:'#d8826a'});}});
+const sofa=(axis='z',len=1.4,c='#9fb4c5')=>propCanvas(g=>{const a=axis==='z',h=len/2,X0=a?-.28:-h,X1=a?.28:h,Z0=a?-h:-.28,Z1=a?h:.28;g.shadow(X0-.05,Z0-.05,X1+.05,Z1+.05);g.box(X0,.08,Z0,X1,.4,Z1,c);
+ if(a){g.box(X0,.4,Z0,X0+.16,.92,Z1,shade(c,.15));g.box(X0,.4,Z0,X1,.62,Z0+.12,c);g.box(X0,.4,Z1-.12,X1,.62,Z1,c);}else{g.box(X0,.4,Z0,X1,.92,Z0+.16,shade(c,.15));g.box(X0,.4,Z0,X0+.12,.62,Z1,c);g.box(X1-.12,.4,Z0,X1,.62,Z1,c);}g.blob(a?X0+.3:X0+.35,.55,a?Z0+.35:Z0+.32,.13,'#d9b35e',.8);});
+const lowTable=()=>propCanvas(g=>{g.shadow(-.62,-.42,.62,.42);for(const[a,b]of[[-.5,-.3],[.5,-.3],[-.5,.3],[.5,.3]])g.box(a-.04,0,b-.04,a+.04,.3,b+.04,PAL.oakDk,{edge:false});g.box(-.6,.3,-.4,.6,.36,.4,PAL.birch);});
+const blanket=(a='#c2564a',b='#f4f1ea',w=1.3,d=1)=>propCanvas(g=>{const n=6;for(let i=0;i<n;i++)for(let j=0;j<n;j++)g.box(-w+2*w*i/n,0,-d+2*d*j/n,-w+2*w*(i+1)/n,.02,-d+2*d*(j+1)/n,(i+j)%2?a:b,{top:(i+j)%2?a:b,edge:false});});
+const basket=()=>propCanvas(g=>{g.box(-.26,0,-.18,.26,.26,.18,'#b98a5a',{top:'#8d6440'});line3(g,[-.2,.26,0],[0,.48,0],'#8d6440');line3(g,[0,.48,0],[.2,.26,0],'#8d6440');g.blob(-.08,.3,0,.08,'#c2564a',.8);});
+const deckChair=(c='#f4f1ea')=>propCanvas(g=>{g.shadow(-.3,-.45,.3,.45);for(const x of[-.26,.26]){line3(g,[x,0,.4],[x,.32,.4],PAL.oak,2);line3(g,[x,0,-.35],[x,.9,-.42],PAL.oak,2);}g.box(-.28,.28,-.3,.28,.34,.42,c);g.box(-.28,.34,-.42,.28,.92,-.34,c);g.box(-.3,.5,-.38,-.24,.56,.36,PAL.oak);g.box(.24,.5,-.38,.3,.56,.36,PAL.oak);});
+const sideTable=()=>propCanvas(g=>{g.cyl(0,0,.06,0,.42,PAL.oakDk);g.cyl(0,0,.24,.42,.48,PAL.birch);});
+const logBench=(axis='x')=>propCanvas(g=>{const a=axis==='x',X0=a?-.72:-.17,X1=a?.72:.17,Z0=a?-.17:-.72,Z1=a?.17:.72;g.shadow(X0,Z0,X1,Z1);g.box(X0,0,Z0,X1,.3,Z1,'#8a6646',{top:'#c9a27a'});g.blob(a?X1:0,.15,a?0:Z1,.16,'#c9a27a',1);});
+const firePit=()=>propCanvas(g=>{for(let i=0;i<12;i++){const a=i/12*Math.PI*2;g.blob(Math.cos(a)*.58,.1,Math.sin(a)*.58,.16,i%2?'#9a9a94':'#7e7f7a',.8);}line3(g,[-.3,.1,-.1],[.3,.18,.12],'#6b4630',2);line3(g,[-.25,.12,.2],[.28,.1,-.18],'#6b4630',2);g.blob(0,.3,0,.2,'#e8873a',1.4);g.blob(.05,.45,0,.12,'#f6c14a',1.5);g.blob(-.02,.58,0,.06,'#fff1b8',1.6);});
+return{barUnit,sofa,lowTable,blanket,basket,deckChair,sideTable,logBench,firePit,lampPost,flowers,tree,olive,reeds,boat,drawCast,CAST_W,CAST_H,SWEATERS,APRON,shade,light,ink,propCanvas,S,espresso,grinder,squareTable,roundTable,chair,plant,oven,breadRack,dishUnit,prepIsland,fridge,beanShelf,herbBar,cups,pickup,pastryCase,pos,post,aFrame,coffeeTable,floorLamp,desk,officeChair,cabinet,sconce,beanJars,bakeStation,dishCart,coin,dirtyCup,fullCup,PAL};})();
 
 
 
@@ -1855,6 +1882,8 @@ const RARE_KIND={tycoon:'fox',astronaut:'rabbit',rocker:'hedgehog',prince:'deer'
 // Walk frames advance with distance: a.walk grows .08 per world unit walked, so one four-frame stride covers
 // about 125 units, two steps of roughly one body width each. The manager steps about four times a second.
 const WALK_FRAMES=.4;
+// How high a guest sits, and where cups stand, for each kind of seat (others: chairs at a table).
+const SIT_LIFT={bar2:.78,lounge4:.36,blanket4:.04,blanket6:.04,deck2:.3,log2N:.3,log2W:.3,log2E:.3},TABLE_TOP={bar2:1.05,lounge4:.36,blanket4:.03,blanket6:.03,deck2:.48,log2N:.3,log2W:.3,log2E:.3};
 const ISO_KINDS=new Set(['binturong','fox','rabbit','hedgehog','deer','owl']);
 function tailIsoRenderer(canvas,lang='zh'){
  const gl=document.createElement('canvas');gl.setAttribute('aria-hidden','true');gl.style.cssText='position:absolute;pointer-events:none;z-index:0;aspect-ratio:auto;image-rendering:pixelated';canvas.before(gl);Object.assign(canvas.style,{position:'relative',zIndex:'1',background:'transparent'});canvas.closest('.tail-game')?.classList.add('tail-3d');
@@ -1940,18 +1969,22 @@ float pat(){vec2 u=tri();
   if(!open){box(G,x0,-.3,0,x0+7,-.02,HALL,0x55705e,false);for(let i=0;i<30;i++){const r=1.3+(i*.41)%1.2;ball(G,x0+8.5+(i*5.3)%17,r*.8,.8+(i*3.7)%(HALL-1),r,i%3?0x3a6a4c:0x467654,.85);}return;}
   const d=deepAt(ox),t=[null,floorTex.tile,floorTex.grass,floorTex.deck][z];box(G,x0,-.3,0,x1,0,d,texMat(t,26/4,d/2),false);
   if(z===1){w(0,130,1040,150,0,1.2,C.wall);w(0,128,1040,152,1.2,1.28,C.birch);for(let x=30;x<1010;x+=60){w(x,132,x+48,150,1.28,1.5,0xb07a5a);ball(G,X(ox+x+24),1.7,Z(141),.42,x%120<60?0x6f8f6a:0x89a87f,.7);}
-   for(const[a,b]of[[72,470],[570,968]]){w(a,688,b,705,0,.85,C.wall);w(a-2,686,b+2,707,.85,.93,C.birch);}}
+   for(const[a,b]of[[72,470],[570,968]]){w(a,688,b,705,0,.85,C.wall);w(a-2,686,b+2,707,.85,.93,C.birch);}
+   const fx=X(ox+520),fz=Z(440),pool=mat(0x8fc3d0,{emissive:0x3a6a7a,emissiveIntensity:.45});cyl(G,fx,fz,1.6,0,.45,C.wall);cyl(G,fx,fz,1.42,.45,.48,pool,false);cyl(G,fx,fz,.3,.48,1.25,C.wall);cyl(G,fx,fz,.75,1.25,1.4,C.wall);cyl(G,fx,fz,.62,1.4,1.42,pool,false);cyl(G,fx,fz,.1,1.42,1.8,pool,false);}
   if(z===2){for(let x=ox/U+1;x<x1;x+=2.2)ball(G,x,.7,.2,.8,x%4.4<2.2?0x5f8a5a:0x6f9a62,.8);w(470,184,570,705,.005,.02,0xd8c8a2,false);
-   for(const[a,b]of[[72,470],[570,968]]){w(a,650,b,705,0,.22,0x6b4e36);w(a,705,b,712,0,.5,0x5f8a5a);}}
+   for(const x of[462,572])w(x,694,x+6,706,0,2.3,C.white);w(458,694,582,706,2.3,2.42,C.white);for(let x=470;x<=575;x+=15)ball(G,X(ox+x),2.48,Z(700),.24,x%30<15?0xe58fa0:0xf0c75e,.8);
+   for(const[a,b]of[[72,470],[570,1040]]){w(a,688,b,712,0,.55,0x5f8a5a);for(let x=a+14;x<b-8;x+=34)ball(G,X(ox+x),.62,Z(700),.42,x%68<34?0x5f8a5a:0x6f9a62,.7);}}
   if(z===3){const water=mat(0x7fa8b8,{emissive:0x2c4c5c,emissiveIntensity:.35});box(G,x0-.02,-.6,Z(SHORE),x1+.02,-.28,Z(SHORE)+9,water,false);w(0,SHORE-4,1040,SHORE,-.6,0,0x6b5040);
    w(490,SHORE,550,690,-.12,-.02,0xa87f55,false);for(const x of[490,546])for(const y of[630,688])w(x,y-4,x+4,y,-.6,.15,0x6b5040);
-   for(let x=10;x<1040;x+=60)if(x<480||x>560)w(x,SHORE-6,x+5,SHORE-1,0,.95,0x6b5040);w(0,SHORE-6,480,SHORE-2,.88,.96,0x8d6440);w(560,SHORE-6,1040,SHORE-2,.88,.96,0x8d6440);}}
+   for(let x=10;x<1040;x+=60)if(x<480||x>560)w(x,SHORE-6,x+5,SHORE-1,0,.95,0x6b5040);
+   for(const x of[790,990])for(const y of[612,716])w(x,y-4,x+6,y,-.6,0,0x6b5040);w(780,606,1000,720,0,.1,0xa87f55);w(790,612,990,714,.1,1.15,0xb98a5a);w(860,712,920,716,.1,.95,0x4b3a2c,false);w(776,602,1004,724,1.15,1.27,0x8a4a36);w(796,622,984,704,1.27,1.5,0x9a5240);w(830,650,950,676,1.5,1.65,0xa85a46);w(0,SHORE-6,480,SHORE-2,.88,.96,0x8d6440);w(560,SHORE-6,1040,SHORE-2,.88,.96,0x8d6440);}}
  // Outdoor pieces the camera should see as pixel art: lamps, olives, trees, flowers, reeds and the boat.
  function outdoorProps(S,z){const ox=z*TAIL_ZONE_W;
-  if(z===1){for(const x of[60,520,1000])S('lamp',()=>P.lampPost(),ox+x,168,0,{near:.2});for(const x of[72,470,570,968])S('lamp',()=>P.lampPost(),ox+x,700,.85);S('olive',()=>P.olive(),ox+103,637);S('olive',()=>P.olive(),ox+943,637);}
-  if(z===2){for(const x of[60,1000])S('lamp',()=>P.lampPost(),ox+x,168,0,{near:.2});for(const x of[455,585])S('lamp',()=>P.lampPost(),ox+x,700);S('tree',()=>P.tree(1.2),ox+43,453);S('tree',()=>P.tree(1.1),ox+1002,453);
-   const colours=['#e58fa0','#f0c75e','#b9a3e0','#f4f1ea'];let k=0;for(const[a,b]of[[90,460],[590,950]])for(let x=a;x<=b;x+=46,k++){const c=colours[k%4];S('flowers'+c,()=>P.flowers(c),ox+x,676+(k%2)*12,.22);}}
-  if(z===3){for(const x of[100,460,580,940])S('lamp',()=>P.lampPost(),ox+x,SHORE-2,0,{near:.2});for(const[x,y]of[[60,612],[300,618],[780,612],[1000,620]])S('reeds',()=>P.reeds(),ox+x,y,-.3);S('boat',()=>P.boat(),ox+600,676,-.32);}}
+  if(z===1){for(const x of[60,1000])S('lamp',()=>P.lampPost(),ox+x,168,0,{near:.2});for(const x of[72,470,570,968])S('lamp',()=>P.lampPost(),ox+x,700,.85);for(const[x,y]of[[103,637],[943,637]])S('olive',()=>P.olive(),ox+x,y);}
+  if(z===2){for(const x of[60,1000])S('lamp',()=>P.lampPost(),ox+x,168,0,{near:.2});for(const x of[455,585])S('lamp',()=>P.lampPost(),ox+x,700,.55);
+   const colours=['#e58fa0','#f0c75e','#b9a3e0','#f4f1ea'];let k=0;for(const[x,y,sc]of[[400,310,1],[640,310,1.05],[415,470,1.1],[625,470,1],[90,470,1.25],[992,330,1.2]]){S('tree'+sc,()=>P.tree(sc),ox+x,y);for(const[dx,dy]of[[-34,22],[30,26]]){const c=colours[k++%4];S('flowers'+c,()=>P.flowers(c),ox+x+dx,y+dy);}}}
+  if(z===3){for(const x of[100,460,580,740])S('lamp',()=>P.lampPost(),ox+x,SHORE-2,0,{near:.2});for(const[x,y]of[[60,612],[300,618],[700,614]])S('reeds',()=>P.reeds(),ox+x,y,-.3);S('boat',()=>P.boat(),ox+605,650,-.32);S('firePit',()=>P.firePit(),ox+240,470);
+   const willow=['#8aa66a','#a3bb7a','#6f8f5a'];S('willow',()=>P.tree(1.1,willow,1),ox+639-120,250);S('willow2',()=>P.tree(1.15,willow,1),ox+61,541);}}
  // Outdoor stations stand on their own little kiosk counters.
  function kiosk(G,st){const x=X(st.x);box(G,x-3,0,Z(140),x+3,1,Z(184),C.white);box(G,x-3.1,1,Z(136),x+3.1,1.07,Z(190),C.birch);for(const dx of[-2.9,2.9])box(G,x+dx-.06,1.07,Z(140),x+dx+.06,2.9,Z(140)+.12,C.birchDk);box(G,x-3.3,2.9,Z(132),x+3.3,3.05,Z(196),[0,0xc46f52,0x5f8a6a,0x5f7f9a][st.zone]);}
  // Every static mesh of a group is merged by material, so a whole area costs a few draw calls.
@@ -1977,9 +2010,11 @@ float pat(){vec2 u=tri();
    done(){g.setDrawRange(0,n*6);for(const k of['position','uv','aFoot'])g.attributes[k].needsUpdate=true;}};}
  const props=batch(600),actors=batch(400);
  // ---- keeping the scene in step with the café ----
- const zones=[];let staticSig='';const lamps=[];
+ const zones=[];let staticSig='';const lamps=[];let flats=new THREE.Group();
+ // Picnic blankets lie flat on the lawn as real geometry, so guests sitting on them are never hidden by them.
+ function blanket(t,big){const hw=big?64:46,hh=big?50:38,n=6,cols=big?[0xc2564a,0xf4f1ea]:[0x5f7f9a,0xf4f1ea];for(let i=0;i<n;i++)for(let j=0;j<n;j++){const x0=t.x-hw+2*hw*i/n,y0=t.y-hh+2*hh*j/n;wb(flats,x0,y0,x0+2*hw/n,y0+2*hh/n,.004,.02,cols[(i+j)%2],false);}}
  function sync(g){for(let z=0;z<4;z++){const want=z<g.zones?'open':z===g.zones?'locked':'';if((zones[z]?.state??'')===want)continue;if(zones[z])scene.remove(zones[z].G);zones[z]=null;if(!want)continue;const G=new THREE.Group();z?outdoor(G,z,want==='open'):hall(G);for(const st of g.stations)if(st.zone===z&&z>0&&want==='open')kiosk(G,st);bake(G);scene.add(G);zones[z]={G,state:want};}
-  const sig=g.zones+'|'+g.tables.map(t=>t.open?1:0).join('')+'|'+g.stations.map(s=>s.open?1:0).join('');if(sig===staticSig)return;staticSig=sig;props.clear();
+  const sig=g.zones+'|'+g.tables.map(t=>t.open?1:0).join('')+'|'+g.stations.map(s=>s.open?1:0).join('');if(sig===staticSig)return;staticSig=sig;props.clear();scene.remove(flats);flats=new THREE.Group();
   const S=(key,make,x,y,h=0,o)=>props.add(sprite(key,make),x,y,h,o);
   // kitchen: bean shelf, bread rack, deck oven, dish station, prep island, fridge
   S('beanShelf',()=>P.beanShelf(),26,240);S('breadRack',()=>P.breadRack(),70,151);S('oven',()=>P.oven(),160,152);S('dishUnit',()=>P.dishUnit(),269,152);S('prep',()=>P.prepIsland(),185,275);S('fridge',()=>P.fridge(),287,325);
@@ -1993,19 +2028,27 @@ float pat(){vec2 u=tri();
   for(const st of g.stations){if(!st.open||st.zone>=g.zones)continue;const y=st.zone?158:150;if(st.kind==='kitchen'&&!st.zone)continue;if(st.kind==='coffee'){S('espresso',()=>P.espresso(),st.x,y,1.07,{near:.9});S('grinder',()=>P.grinder(),st.x+78,y,1.07,{near:.7});}else if(st.kind==='herb')S('herb',()=>P.herbBar(),st.x,y+1,1.07,{near:.7});else S('bake',()=>P.bakeStation(),st.x,y+2,1.07,{near:.7});}
   for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones)S('cart',()=>P.dishCart(),d.x,178,0,{near:.3});for(let z=1;z<g.zones;z++)outdoorProps(S,z);
   // Tables and their chairs: each chair faces its table; the hall's tables for two stand against the banquette.
-  for(const t of g.tables){if(!t.open)continue;const zs=ZONE[t.zone],two=t.seats===2;S(two?`round${t.zone}`:`square${t.zone}`,()=>two?P.roundTable(zs.round,zs.base):P.squareTable(zs.top,zs.leg,zs.wood),t.x,t.y);
+  // The outdoor seats come in other kinds: a bar ledge, sofas round a low table, a picnic blanket (always
+  // behind whoever sits on it), deck chairs at a side table, and log benches round the fire pit.
+  for(const t of g.tables){if(!t.open)continue;const zs=ZONE[t.zone],two=t.seats===2,k=t.geom;
+   if(k==='bar2'){S('bar',()=>P.barUnit(),t.x,t.y);continue;}
+   if(k==='lounge4'){S('lowTable',()=>P.lowTable(),t.x,t.y);S('sofaZ',()=>P.sofa('z',1.25,'#9fb4c5'),t.x-58,t.y+6);S('sofaX',()=>P.sofa('x',1.3,'#a9b9a0'),t.x+2,t.y-46);continue;}
+   if(k==='blanket4'||k==='blanket6'){blanket(t,k==='blanket6');S('basket',()=>P.basket(),t.x,t.y);continue;}
+   if(k==='deck2'){S('sideTable',()=>P.sideTable(),t.x,t.y);t.seatAt.forEach((s,i)=>S('deckChair'+i,()=>P.deckChair(i?'#f4f1ea':'#9fb4c5'),s.x,s.y-4));continue;}
+   if(k==='log2N'||k==='log2W'||k==='log2E'){S(k==='log2N'?'logX':'logZ',()=>P.logBench(k==='log2N'?'x':'z'),t.x,t.y);continue;}
+   S(k==='round6'?'round6':two?`round${t.zone}`:`square${t.zone}`,()=>k==='round6'?P.roundTable('#f4f1ea','#4b5052',1.05):two?P.roundTable(zs.round,zs.base):P.squareTable(zs.top,zs.leg,zs.wood),t.x,t.y);
    if(t.geom==='2l')continue;t.seatAt.forEach((s,i)=>{const dx=s.x-t.x,dy=s.y-t.y,face=Math.abs(dx)>Math.abs(dy)*1.5?(dx<0?'e':'w'):(dy<0?'s':'n'),c=zs.seats[(t.id+i)%zs.seats.length];S(`chair${face}${c}${t.zone}`,()=>P.chair(face,c,zs.wood),s.x,s.y);});}
-  props.done();
+  props.done();bake(flats);scene.add(flats);
   // Warm lights: one over each four-seater in the hall and one at each wall sconce; frame() brightens them
   // as the evening comes.
   for(const l of lamps)scene.remove(l);lamps.length=0;const lamp=(x,y,h,base,range)=>{const l=new THREE.PointLight(0xffc27a,base,range,1.6);l.position.set(X(x),h,Z(y));l.userData.base=base;scene.add(l);lamps.push(l);};
-  for(const t of g.tables)if(t.open&&t.zone===0&&t.seats===4)lamp(t.x,t.y,2.7,5,7);for(const x of[372,560,720,880])lamp(x,150,2.3,3,8);}
+  for(const t of g.tables)if(t.open&&t.zone===0&&t.seats===4)lamp(t.x,t.y,2.7,5,7);for(const x of[372,560,720,880])lamp(x,150,2.3,3,8);if(g.zones>3)lamp(3*TAIL_ZONE_W+240,470,.8,2,6);}
  // Animals, and what stands on the tables, change every frame.
  function animate(g,t){actors.clear();const A=(a,kind,o={})=>{const moving=a.moving,frame=moving?'walk'+(Math.floor((a.walk||0)*WALK_FRAMES)%4+4)%4:((t+(a.id??0)*.37)%1.2<.6?'idle0':'idle1'),carry=o.bag?.length?o.bag.map(b=>b.type).slice(0,3):null,key=`a:${kind}:${o.role??''}:${o.top??''}:${frame}:${carry??''}`;
-   actors.add(sprite(key,()=>{const c=P.drawCast(kind,{role:o.role,top:o.top,frame,carry});return{canvas:c,ax:14,ay:40};}),a.x,a.y,o.sit?.46:0,{flip:(a.face??1)<0,near:.06});};
-  for(const gr of g.groups){const seated=gr.state==='waiting'||gr.state==='eating';gr.members.forEach((m,i)=>{const kind=m.rare?RARE_KIND[m.rare]:ISO_KINDS.has(m.kind)?m.kind:'fox';A(m,kind,{top:m.rare?RARE_COAT[m.rare]:kind==='owl'?null:P.SWEATERS[(gr.id*3+i+(m.tint|0))%P.SWEATERS.length],sit:seated});});}
+   actors.add(sprite(key,()=>{const c=P.drawCast(kind,{role:o.role,top:o.top,frame,carry});return{canvas:c,ax:14,ay:40};}),a.x,a.y,o.sit??0,{flip:(a.face??1)<0,near:.06});};
+  for(const gr of g.groups){const seated=gr.state==='waiting'||gr.state==='eating',lift=seated?SIT_LIFT[g.tables[gr.table]?.geom]??.46:0;gr.members.forEach((m,i)=>{const kind=m.rare?RARE_KIND[m.rare]:ISO_KINDS.has(m.kind)?m.kind:'fox';A(m,kind,{top:m.rare?RARE_COAT[m.rare]:kind==='owl'?null:P.SWEATERS[(gr.id*3+i+(m.tint|0))%P.SWEATERS.length],sit:lift});});}
   for(const s of g.staff)A(s,'binturong',{role:s.role,bag:s.bag});if(g.inspector)A(g.inspector,'owl');A(g.player,'binturong',{role:'manager',bag:g.player.bag});
-  for(const tb of g.tables){if(!tb.open)continue;const gr=g.groups.find(v=>v.id===tb.group),busy=gr&&(gr.state==='waiting'||gr.state==='eating'),h=tb.seats===2?.95:.96;
+  for(const tb of g.tables){if(!tb.open)continue;const gr=g.groups.find(v=>v.id===tb.group),busy=gr&&(gr.state==='waiting'||gr.state==='eating'),h=TABLE_TOP[tb.geom]??(tb.seats===2?.95:.96);
    const show=tb.state==='dirty'?Array.from({length:Math.min(4,tb.seats)},(_,i)=>({i,n:Math.min(4,tb.seats),dirty:true})):busy?gr.items.map((it,i)=>({i,n:gr.items.length,it})).filter(v=>v.it.state==='served').slice(gr.state==='eating'?gr.members.filter(m=>m.meal).length:0):[];
    for(const v of show.slice(0,6)){const seat=tb.seatAt[Math.floor(v.i*tb.seats/Math.max(1,v.n))%tb.seats],type=v.dirty?'dirty':v.it.type;actors.add(sprite('cup:'+type,()=>v.dirty?P.dirtyCup():P.fullCup(type)),tb.x+(seat.x-tb.x)*.45,tb.y+(seat.y-tb.y)*.35,h,{near:.5});}
    if(tb.coins)actors.add(sprite('coin',()=>P.coin()),tb.x-12,tb.y+4,h,{near:.5});}
