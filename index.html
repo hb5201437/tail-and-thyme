@@ -516,10 +516,11 @@ const TAIL_ZONES=['hall','terrace','garden','lake'];
 const TAIL_ZONE_PRICES=[0,3900,13000,29250];
 // The café is seen from the front at 45 degrees. The hall is deep: the kitchen and the office sit behind
 // its left wall, the back bar runs along the top, a front counter in two pieces keeps a staff aisle
-// behind it, and the door is at the front right. The outdoor areas join the hall sideways and are
-// shallower (OUTDOOR_Y).
+// behind it, and the door is at the front right. The outdoor areas join the hall sideways, as deep as
+// the hall, each with its own way out at the front: a gap in the terrace wall, the garden gate, and a
+// pier into the lake (the lakeside deck stops at the shore, LAKE_SHORE).
 const TAIL_WORLD={w:4160,h:740,minX:72,minY:182,maxY:705};
-const OUTDOOR_Y=440;
+const LAKE_SHORE=600,PIER={x0:3610,x1:3670,y1:690};
 // Every station is worked from one line just in front of the back counters: the oven and the sink in
 // the kitchen, the espresso machine and the thyme bar on the back bar. The kitchen door is on that line.
 const TAIL_BAR_Y=196;
@@ -531,25 +532,33 @@ const TAIL_LOBBY=[{x:895,y:322},{x:945,y:322},{x:895,y:388},{x:945,y:388},{x:895
 // office and lounge, the kitchen's prep island and fridge, the lounge's sofa, coffee table and floor lamp,
 // the two pieces of the front counter with a pass-through between them, and the banquette along the
 // left wall. No edge sits on a multiple of the walk grid's 22, or walkers catch on it.
-const TAIL_WALLS=[[316,250,324,372],[316,420,324,610],[316,700,324,740],[72,356,324,364],[72,536,324,544],[120,250,250,300],[266,296,307,350],[62,664,202,740],[115,609,165,651],[251,679,273,701],[395,247,470,285],[672,247,904,285],[324,436,338,599]];
+const TAIL_WALLS=[
+ // terrace: the front wall with its gap, and two olive planters
+ [1112,688,1510,740],[1610,688,2008,740],[1123,617,1163,657],[1963,617,2003,657],
+ // garden: flower beds either side of the gate, and two tree trunks
+ [2152,650,2550,740],[2650,650,3048,740],[2111,441,2135,465],[3070,441,3094,465],
+ // hall
+ [316,250,324,372],[316,420,324,610],[316,700,324,740],[72,356,324,364],[72,536,324,544],[120,250,250,300],[266,296,307,350],[62,664,202,740],[115,609,165,651],[251,679,273,701],[395,247,470,285],[672,247,904,285],[324,436,338,599]];
 const T=(x,y,seats,geom=seats)=>({x,y,seats,geom,zone:Math.floor(x/TAIL_ZONE_W)});
 const TAIL_TABLES=[
  // Hall: two tables for two on the banquette along the left wall, three four-seaters in the middle and
  // three more tables for two near the front, all with room to walk between them.
  T(380,470,2,'2l'),T(380,550,2,'2l'),T(560,400,4),T(740,400,4),T(652,660,2),T(650,560,4),T(500,660,2),T(802,660,2),
- // Terrace bistro tables alternate twos and fours.
- ...[100,245,390,535,680,825,970].flatMap((x,i)=>[T(1040+x,280,i%2?2:4),T(1040+x,385,i%2?4:2)]),
- // Garden: long party tables up top, four-seaters below.
- ...[130,335,540,745,950].map(x=>T(2080+x,280,6)),...[100,245,390,535,680,825,970].map(x=>T(2080+x,385,4)),
- // Lakeside boardwalk: little tables for two.
- ...[90,213,336,459,582,705,828,950].flatMap(x=>[T(3120+x,280,2),T(3120+x,385,2)])];
+ // Terrace: bistro tables in three staggered rows, twos and fours mixed, with a clear way down the middle
+ // to the gap in the front wall.
+ ...[[140,300,4],[320,300,2],[500,300,2],[680,300,4],[860,300,4],[230,450,2],[410,450,2],[592,450,4],[770,450,4],[950,450,2],[142,594,2],[320,592,4],[720,592,4],[900,594,2]].map(([x,y,n])=>T(1040+x,y,n)),
+ // Garden: long party tables under the trees up top, four-seaters below, the gravel path to the gate
+ // between them.
+ ...[[170,300],[420,300],[683,300],[930,300],[800,460]].map(([x,y])=>T(2080+x,y,6)),...[[160,460],[340,460],[640,460],[160,600],[340,600],[700,600],[880,600]].map(([x,y])=>T(2080+x,y,4)),
+ // Lakeside deck: little tables for two either side of the pier.
+ ...[140,322,702,880].flatMap(x=>[280,370,461,550].map(y=>T(3120+x,y,2)))];
 // A banquette table ('2l') seats both guests on its left, side by side, and is approached from its right.
 const TAIL_TABLE_GEOM={'2l':{hw:30,hh:20,seats:[[-40,-12],[-40,12]],approach:[50,0]},2:{hw:30,hh:20,seats:[[-18,-30],[18,-30]]},4:{hw:42,hh:26,seats:[[-54,-2],[54,-2],[-18,-38],[18,-38]]},6:{hw:76,hh:32,seats:[[-88,-2],[88,-2],[-48,-42],[-16,-42],[16,-42],[48,-42]]}};
 // Producers. Outer zones bring their own outdoor bar, grill or cold-drinks boat.
 const TAIL_STATIONS=[{kind:'coffee',x:480,zone:0},{kind:'herb',x:660,zone:0},{kind:'kitchen',x:160,zone:0},{kind:'coffee',x:1340,zone:1},{kind:'kitchen',x:2380,zone:2},{kind:'herb',x:3420,zone:3}];
 // Dirty tubs go to the sink, or to the dish cart in each outer zone.
 const TAIL_DROPS=[{x:270,y:196,zone:0},{x:1800,y:196,zone:1},{x:2840,y:196,zone:2},{x:3880,y:196,zone:3}];
-const TAIL_GATES=[{x:920,y:700},{x:1560,y:438},{x:2600,y:438},{x:3640,y:438}];
+const TAIL_GATES=[{x:920,y:700},{x:1560,y:700},{x:2600,y:700},{x:3640,y:680}];
 // cost is the ingredients used when an item is started (or a pastry baked), whether or not it sells.
 const TAIL_MENU={espresso:{price:18,cost:6,time:5.4,prep:2.3,kind:'coffee'},latte:{price:24,cost:8,time:7,prep:2.3,milk:1.4,kind:'coffee'},thyme:{price:30,cost:10,time:4.6,prep:1,kind:'herb'},croissant:{price:16,cost:5,kind:'kitchen',pastry:true,food:true},sandwich:{price:34,cost:12,time:8,prep:1.6,kind:'kitchen',food:true}};
 // Each upgrade lists the price of every level in order; a save stores the owned level.
@@ -610,7 +619,7 @@ function rand(g){g.rng=(g.rng+0x6D2B79F5)|0;let t=g.rng;t=Math.imul(t^t>>>15,t|1
 const pick=(g,list)=>list[Math.floor(rand(g)*list.length)];
 
 // ---- Walking -------------------------------------------------------------------------------
-function tailSolid(x,y,g){if(x<72||x>g.zones*TAIL_ZONE_W-72||y<TAIL_WORLD.minY||y>TAIL_WORLD.maxY)return true;if(x>=TAIL_ZONE_W&&y>OUTDOOR_Y)return true;if(x<TAIL_ZONE_W)for(const[x0,y0,x1,y1]of TAIL_WALLS)if(x>x0&&x<x1&&y>y0&&y<y1)return true;for(const t of g.tables)if(t.open&&Math.abs(x-t.x)<t.hw&&Math.abs(y-t.y)<t.hh)return true;return false;}
+function tailSolid(x,y,g){if(x<72||x>g.zones*TAIL_ZONE_W-72||y<TAIL_WORLD.minY||y>TAIL_WORLD.maxY)return true;if(x>=3*TAIL_ZONE_W&&y>LAKE_SHORE&&!(x>PIER.x0&&x<PIER.x1&&y<PIER.y1))return true;for(const[x0,y0,x1,y1]of TAIL_WALLS)if(x>x0&&x<x1&&y>y0&&y<y1)return true;for(const t of g.tables)if(t.open&&Math.abs(x-t.x)<t.hw&&Math.abs(y-t.y)<t.hh)return true;return false;}
 function tailLineClear(g,a,b){const d=tailDistance(a,b),steps=Math.max(1,Math.ceil(d/4));for(let i=0;i<=steps;i++){if(tailSolid(a.x+(b.x-a.x)*i/steps,a.y+(b.y-a.y)*i/steps,g))return false;}return true;}
 const STEP=22,COLS=Math.ceil(TAIL_WORLD.w/STEP)+1,ROWS=Math.ceil(TAIL_WORLD.h/STEP)+1;
 // The walk grid only changes when tables or zones open, so it is rebuilt then instead of per search.
@@ -1815,7 +1824,14 @@ const dishCart=()=>propCanvas(g=>{g.shadow(-.95,-.4,.95,.4);for(const dx of[-.7,
 const coin=()=>propCanvas(g=>{g.cyl(0,0,.11,0,.03,'#f2c13a',{top:'#ffe27a'});g.cyl(.12,.08,.11,0,.03,'#f2c13a',{top:'#ffe27a'});});
 const dirtyCup=()=>propCanvas(g=>{g.cyl(0,0,.1,0,.02,'#d8d2c4');g.cyl(0,0,.06,.02,.12,'#d8d2c4',{top:'#a59a86'});});
 const fullCup=t=>propCanvas(g=>{g.cyl(0,0,.1,0,.02,PAL.white);g.cyl(0,0,.06,.02,.12,t==='thyme'?'#e3ede0':PAL.white,{top:t==='latte'?'#c99a62':t==='thyme'?'#d9a43b':t==='croissant'||t==='sandwich'?PAL.white:PAL.coffee});if(t==='croissant')g.blob(0,.16,0,.09,'#d9a25b',.55);if(t==='sandwich')g.box(-.08,.12,-.06,.08,.2,.06,'#e6c48a');});
-return{drawCast,CAST_W,CAST_H,SWEATERS,APRON,shade,light,ink,propCanvas,S,espresso,grinder,squareTable,roundTable,chair,plant,oven,breadRack,dishUnit,prepIsland,fridge,beanShelf,herbBar,cups,pickup,pastryCase,pos,post,aFrame,coffeeTable,floorLamp,desk,officeChair,cabinet,sconce,beanJars,bakeStation,dishCart,coin,dirtyCup,fullCup,PAL};})();
+// Outdoor pieces: a lantern post, a clump of flowers, a garden tree, an olive in a planter, reeds and a rowing boat.
+const lampPost=()=>propCanvas(g=>{g.cyl(0,0,.16,0,.06,PAL.char);line3(g,[0,.06,0],[0,2.3,0],PAL.char,2);g.box(-.13,2.3,-.13,.13,2.62,.13,'#ffd98a',{top:'#3a3f41'});g.box(-.16,2.62,-.16,.16,2.68,.16,PAL.char);dot(g,[0,2.46,.14],'#fff3cf');});
+const flowers=c=>propCanvas(g=>{for(let i=0;i<9;i++){const a=i*2.1,r=.08+(i%3)*.12;g.blob(Math.cos(a)*r,.16+(i%2)*.06,Math.sin(a)*r,.11,LEAF[i%3],.7);}for(let i=0;i<7;i++){const a=i*2.6+.5,r=.06+(i%3)*.13;g.blob(Math.cos(a)*r,.3+(i%2)*.05,Math.sin(a)*r,.06,i%3?c:'#fff3d6',1);}});
+const tree=(s=1)=>propCanvas(g=>{g.shadow(-.9*s,-.6*s,.9*s,.6*s);g.cyl(0,0,.16*s,0,1.5*s,'#7a5a3e');for(let i=0;i<16;i++){const a=i*2.4,r=(.2+(i%4)*.18)*s;g.blob(Math.cos(a)*r,(1.5+(i%5)*.22)*s,Math.sin(a)*r,.42*s,LEAF[i%3],.8);}});
+const olive=()=>propCanvas(g=>{g.box(-.4,0,-.4,.4,.55,.4,'#c98a6b');g.box(-.36,.55,-.36,.36,.58,.36,'#5a4632',{edge:false});line3(g,[0,.58,0],[0,1.4,0],'#7a6a55',2);for(let i=0;i<11;i++){const a=i*2.4,r=.12+(i%3)*.14;g.blob(Math.cos(a)*r,1.25+(i%4)*.12,Math.sin(a)*r,.2,i%2?'#9aa98a':'#80927a',.75);}});
+const reeds=()=>propCanvas(g=>{for(let i=0;i<7;i++){const x=(i-3)*.09,z=(i%2)*.08,h=.6+(i%3)*.18;line3(g,[x,0,z],[x+.04,h,z],i%2?'#7f9a5e':'#93ad6a');if(i%2)g.blob(x+.04,h,z,.04,'#7a5a3e',1.6);}});
+const boat=()=>propCanvas(g=>{g.box(-.45,0,-1.1,.45,.35,1.1,'#b0573f',{top:'#8a4a36'});g.box(-.36,.2,-.95,.36,.36,.95,'#d8c39a',{edge:false});g.box(-.4,.3,-.12,.4,.4,.12,'#b98a5a');});
+return{lampPost,flowers,tree,olive,reeds,boat,drawCast,CAST_W,CAST_H,SWEATERS,APRON,shade,light,ink,propCanvas,S,espresso,grinder,squareTable,roundTable,chair,plant,oven,breadRack,dishUnit,prepIsland,fridge,beanShelf,herbBar,cups,pickup,pastryCase,pos,post,aFrame,coffeeTable,floorLamp,desk,officeChair,cabinet,sconce,beanJars,bakeStation,dishCart,coin,dirtyCup,fullCup,PAL};})();
 
 
 
@@ -1830,7 +1846,7 @@ return{drawCast,CAST_W,CAST_H,SWEATERS,APRON,shade,light,ink,propCanvas,S,espres
 // along the counter and y from the counter to the door, stretched by DEPTH. Markers, bubbles and tags are
 // tail-art.mjs's overlay, placed through this camera.
 const U=40,DEPTH=1.5,BACK=130,FRONT=470,HALL_FRONT=720,YAW=Math.PI/4,PITCH=Math.PI/6,WALL=3.4,D=20,P=TAIL_PIXEL;
-const X=x=>x/U,Z=y=>(y-BACK)*DEPTH/U,DEEP=Z(FRONT),HALL=Z(HALL_FRONT);
+const X=x=>x/U,Z=y=>(y-BACK)*DEPTH/U,DEEP=Z(FRONT),HALL=Z(HALL_FRONT),SHORE=600,deepAt=x=>Math.floor(x/TAIL_ZONE_W)===3?Z(SHORE):HALL;
 // Nordic palette: warm white walls, pale ash floor, birch, linen and muted sage, dusty blue and mustard.
 const C={mustard:0xd9b35e,sageDk:0x6f8a77,walnut:0x8a6a52,wall2:0xece6dc,wain:0xe2e7dc,birch:0xe6cca0,birchDk:0xc09c6c,oak:0xb98a5a,white:0xf7f5f0,char:0x4b5052,ink:0x2f3436,sage:0xa9b9a0,linen:0xdcd5c8,steel:0xc9cdcc,steelDk:0x8c9391,glass:0xd6e8ea};
 // Each outdoor area dresses its tables and chairs in its own colours: table top, legs, chair seats, chair wood.
@@ -1847,7 +1863,7 @@ function tailIsoRenderer(canvas,lang='zh'){
  sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-20,right:20,top:20,bottom:-20,near:1,far:90});sun.shadow.bias=-.0006;sun.shadow.normalBias=.04;scene.add(sun,sun.target,sky);
  // ---- pixel shading for the 3D parts: a world-space pattern by role (1 wood, 2 fabric, 3 plaster, 4 metal),
  // light cut into steps with an ordered dither only round each step edge, lit steps warm and shaded steps cool ----
- const PX_GLSL=`varying vec3 vWP;varying vec3 vWN;
+ const PX_GLSL=`varying vec3 vWP;varying vec3 vWN;uniform float uWarm;
 float hsh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 const float BY[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
 float bayer(vec2 p){ivec2 i=ivec2(mod(floor(p),4.));return (BY[i.x+i.y*4]+.5)/16.;}
@@ -1864,9 +1880,11 @@ float pat(){vec2 u=tri();
 #else
  return 1.;
 #endif
-}`,PX_SHADE=`{float a=max(dot(diffuseColor.rgb,vec3(.299,.587,.114)),.02);vec3 lit=outgoingLight-totalEmissiveRadiance;float L=dot(lit,vec3(.299,.587,.114))/a;float q=clamp(floor(L*3.+.5+(bayer(gl_FragCoord.xy)-.5)*.4)/3.,.45,1.4);outgoingLight=diffuseColor.rgb*q*mix(vec3(.86,.9,1.08),vec3(1.06,1.,.9),smoothstep(.55,1.2,q))+totalEmissiveRadiance;}`;
+}`,PX_SHADE=`{float a=max(dot(diffuseColor.rgb,vec3(.299,.587,.114)),.02);vec3 lit=outgoingLight-totalEmissiveRadiance;float L=dot(lit,vec3(.299,.587,.114))/a;float q=clamp(floor(L*3.+.5+(bayer(gl_FragCoord.xy)-.5)*.4)/3.,.45,1.4);outgoingLight=diffuseColor.rgb*q*mix(mix(vec3(.86,.9,1.08),vec3(1.05,.9,.76),uWarm),vec3(1.06,1.,.9),smoothstep(.55,1.2,q))+totalEmissiveRadiance;}`;
+ // In the evening (WARM rises to 1) shaded steps turn from cool blue to warm amber.
+ const WARM={value:0};
  function pixelShade(m,pat=0){m.defines={...(m.defines||{}),PAT:pat};m.customProgramCacheKey=()=>'tpx'+pat;
-  m.onBeforeCompile=s=>{s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vWN;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;vWN=normalize(mat3(modelMatrix)*objectNormal);');
+  m.onBeforeCompile=s=>{s.uniforms.uWarm=WARM;s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vWN;').replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;vWN=normalize(mat3(modelMatrix)*objectNormal);');
    s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\n'+PX_GLSL).replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=pat();').replace('#include <opaque_fragment>',PX_SHADE+'\n#include <opaque_fragment>');};return m;}
  const PAT=new Map([[C.birch,1],[C.birchDk,1],[C.oak,1],[C.linen,2],[C.sage,2],[C.wall,3],[C.wall2,3],[C.steel,4],[C.steelDk,4]]),mats=new Map();
  const mat=(c,o=null)=>{const k=c+(o?JSON.stringify(o):'');if(!mats.has(k)){const m=new THREE.MeshLambertMaterial({color:c,...(o||{})});mats.set(k,o?.transparent?m:pixelShade(m,PAT.get(c)??0));}return mats.get(k);};
@@ -1916,11 +1934,24 @@ float pat(){vec2 u=tri();
  // someone is in the staff aisle.
  const front=new THREE.Group(),fadeM=[C.white,C.birch].map(c=>pixelShade(new THREE.MeshLambertMaterial({color:c,transparent:true}),PAT.get(c)??0));let fade=1;
  function fadeFront(g){const behind=[g.player,...g.staff].some(a=>a.x>380&&a.x<920&&a.y<250),now=behind?.38:1;fade+=(now-fade)*.2;for(const m of fadeM){m.opacity=fade;m.depthWrite=fade>.95;}}
- function outdoor(G,z,open){const x0=z*TAIL_ZONE_W/U,x1=x0+26,d=DEEP;if(!open){box(G,x0,-.3,0,x0+7,-.02,d,0x55705e,false);for(let i=0;i<22;i++){const r=1.3+(i*.41)%1.2;ball(G,x0+8.5+(i*5.3)%17,r*.8,.8+(i*3.7)%(d-1),r,i%3?0x3a6a4c:0x467654,.85);}return;}
-  const t=[null,floorTex.tile,floorTex.grass,floorTex.deck][z];box(G,x0,-.3,0,x1,0,d,texMat(t,26/4,d/2),false);
-  if(z===1){box(G,x0,0,0,x1,.6,.6,C.birch);for(let x=x0+.8;x<x1;x+=1.4)ball(G,x,.85,.3,.42,x%2.8<1.4?0x6f8f6a:0x89a87f);}
-  if(z===2)for(let x=x0+1;x<x1;x+=2.2)ball(G,x,.7,.2,.8,x%4.4<2.2?0x5f8a5a:0x6f9a62,.8);
-  if(z===3){box(G,x0,-.6,-8,x1,-.25,0,mat(0x7fa8b8,{emissive:0x2c4c5c,emissiveIntensity:.3}),false);for(let x=x0+1;x<x1;x+=3.2)cyl(G,x,.1,.12,-.6,1,0x6b5040);box(G,x0,.9,.05,x1,1,.15,0x6b5040);}}
+ // ---- the outdoor areas, as deep as the hall: the terrace's tiles, stucco walls and planters; the garden's
+ // lawn, gravel path and flower beds; the lakeside deck with its railing, a pier and the water in front ----
+ function outdoor(G,z,open){const x0=z*TAIL_ZONE_W/U,x1=x0+26,ox=z*TAIL_ZONE_W,w=(a,b,c,e,h0,h1,col,cast)=>wb(G,ox+a,b,ox+c,e,h0,h1,col,cast);
+  if(!open){box(G,x0,-.3,0,x0+7,-.02,HALL,0x55705e,false);for(let i=0;i<30;i++){const r=1.3+(i*.41)%1.2;ball(G,x0+8.5+(i*5.3)%17,r*.8,.8+(i*3.7)%(HALL-1),r,i%3?0x3a6a4c:0x467654,.85);}return;}
+  const d=deepAt(ox),t=[null,floorTex.tile,floorTex.grass,floorTex.deck][z];box(G,x0,-.3,0,x1,0,d,texMat(t,26/4,d/2),false);
+  if(z===1){w(0,130,1040,150,0,1.2,C.wall);w(0,128,1040,152,1.2,1.28,C.birch);for(let x=30;x<1010;x+=60){w(x,132,x+48,150,1.28,1.5,0xb07a5a);ball(G,X(ox+x+24),1.7,Z(141),.42,x%120<60?0x6f8f6a:0x89a87f,.7);}
+   for(const[a,b]of[[72,470],[570,968]]){w(a,688,b,705,0,.85,C.wall);w(a-2,686,b+2,707,.85,.93,C.birch);}}
+  if(z===2){for(let x=ox/U+1;x<x1;x+=2.2)ball(G,x,.7,.2,.8,x%4.4<2.2?0x5f8a5a:0x6f9a62,.8);w(470,184,570,705,.005,.02,0xd8c8a2,false);
+   for(const[a,b]of[[72,470],[570,968]]){w(a,650,b,705,0,.22,0x6b4e36);w(a,705,b,712,0,.5,0x5f8a5a);}}
+  if(z===3){const water=mat(0x7fa8b8,{emissive:0x2c4c5c,emissiveIntensity:.35});box(G,x0-.02,-.6,Z(SHORE),x1+.02,-.28,Z(SHORE)+9,water,false);w(0,SHORE-4,1040,SHORE,-.6,0,0x6b5040);
+   w(490,SHORE,550,690,-.12,-.02,0xa87f55,false);for(const x of[490,546])for(const y of[630,688])w(x,y-4,x+4,y,-.6,.15,0x6b5040);
+   for(let x=10;x<1040;x+=60)if(x<480||x>560)w(x,SHORE-6,x+5,SHORE-1,0,.95,0x6b5040);w(0,SHORE-6,480,SHORE-2,.88,.96,0x8d6440);w(560,SHORE-6,1040,SHORE-2,.88,.96,0x8d6440);}}
+ // Outdoor pieces the camera should see as pixel art: lamps, olives, trees, flowers, reeds and the boat.
+ function outdoorProps(S,z){const ox=z*TAIL_ZONE_W;
+  if(z===1){for(const x of[60,520,1000])S('lamp',()=>P.lampPost(),ox+x,168,0,{near:.2});for(const x of[72,470,570,968])S('lamp',()=>P.lampPost(),ox+x,700,.85);S('olive',()=>P.olive(),ox+103,637);S('olive',()=>P.olive(),ox+943,637);}
+  if(z===2){for(const x of[60,1000])S('lamp',()=>P.lampPost(),ox+x,168,0,{near:.2});for(const x of[455,585])S('lamp',()=>P.lampPost(),ox+x,700);S('tree',()=>P.tree(1.2),ox+43,453);S('tree',()=>P.tree(1.1),ox+1002,453);
+   const colours=['#e58fa0','#f0c75e','#b9a3e0','#f4f1ea'];let k=0;for(const[a,b]of[[90,460],[590,950]])for(let x=a;x<=b;x+=46,k++){const c=colours[k%4];S('flowers'+c,()=>P.flowers(c),ox+x,676+(k%2)*12,.22);}}
+  if(z===3){for(const x of[100,460,580,940])S('lamp',()=>P.lampPost(),ox+x,SHORE-2,0,{near:.2});for(const[x,y]of[[60,612],[300,618],[780,612],[1000,620]])S('reeds',()=>P.reeds(),ox+x,y,-.3);S('boat',()=>P.boat(),ox+600,676,-.32);}}
  // Outdoor stations stand on their own little kiosk counters.
  function kiosk(G,st){const x=X(st.x);box(G,x-3,0,Z(140),x+3,1,Z(184),C.white);box(G,x-3.1,1,Z(136),x+3.1,1.07,Z(190),C.birch);for(const dx of[-2.9,2.9])box(G,x+dx-.06,1.07,Z(140),x+dx+.06,2.9,Z(140)+.12,C.birchDk);box(G,x-3.3,2.9,Z(132),x+3.3,3.05,Z(196),[0,0xc46f52,0x5f8a6a,0x5f7f9a][st.zone]);}
  // Every static mesh of a group is merged by material, so a whole area costs a few draw calls.
@@ -1960,12 +1991,15 @@ float pat(){vec2 u=tri();
   for(const x of[372,560,720,880])S('sconce',()=>P.sconce('back'),x,132,2.2,{near:.1});S('plant:fig2',()=>P.plant('fig',1.2),1000,200,0,{near:.3});S('plant:corner',()=>P.plant('fig',1),360,705);
   for(const[x,y]of[[868,300],[868,400],[868,500],[868,600],[972,300],[972,400],[972,500],[972,600]])S('post',()=>P.post(),x,y);S('aFrame',()=>P.aFrame(),1004,650);
   for(const st of g.stations){if(!st.open||st.zone>=g.zones)continue;const y=st.zone?158:150;if(st.kind==='kitchen'&&!st.zone)continue;if(st.kind==='coffee'){S('espresso',()=>P.espresso(),st.x,y,1.07,{near:.9});S('grinder',()=>P.grinder(),st.x+78,y,1.07,{near:.7});}else if(st.kind==='herb')S('herb',()=>P.herbBar(),st.x,y+1,1.07,{near:.7});else S('bake',()=>P.bakeStation(),st.x,y+2,1.07,{near:.7});}
-  for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones)S('cart',()=>P.dishCart(),d.x,178,0,{near:.3});
+  for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones)S('cart',()=>P.dishCart(),d.x,178,0,{near:.3});for(let z=1;z<g.zones;z++)outdoorProps(S,z);
   // Tables and their chairs: each chair faces its table; the hall's tables for two stand against the banquette.
   for(const t of g.tables){if(!t.open)continue;const zs=ZONE[t.zone],two=t.seats===2;S(two?`round${t.zone}`:`square${t.zone}`,()=>two?P.roundTable(zs.round,zs.base):P.squareTable(zs.top,zs.leg,zs.wood),t.x,t.y);
    if(t.geom==='2l')continue;t.seatAt.forEach((s,i)=>{const dx=s.x-t.x,dy=s.y-t.y,face=Math.abs(dx)>Math.abs(dy)*1.5?(dx<0?'e':'w'):(dy<0?'s':'n'),c=zs.seats[(t.id+i)%zs.seats.length];S(`chair${face}${c}${t.zone}`,()=>P.chair(face,c,zs.wood),s.x,s.y);});}
   props.done();
-  for(const l of lamps)scene.remove(l);lamps.length=0;for(const t of g.tables)if(t.open&&t.zone===0&&t.seats===4){const l=new THREE.PointLight(0xffc27a,5,5.5,1.6);l.position.set(X(t.x),2.7,Z(t.y));scene.add(l);lamps.push(l);}}
+  // Warm lights: one over each four-seater in the hall and one at each wall sconce; frame() brightens them
+  // as the evening comes.
+  for(const l of lamps)scene.remove(l);lamps.length=0;const lamp=(x,y,h,base,range)=>{const l=new THREE.PointLight(0xffc27a,base,range,1.6);l.position.set(X(x),h,Z(y));l.userData.base=base;scene.add(l);lamps.push(l);};
+  for(const t of g.tables)if(t.open&&t.zone===0&&t.seats===4)lamp(t.x,t.y,2.7,5,7);for(const x of[372,560,720,880])lamp(x,150,2.3,3,8);}
  // Animals, and what stands on the tables, change every frame.
  function animate(g,t){actors.clear();const A=(a,kind,o={})=>{const moving=a.moving,frame=moving?'walk'+(Math.floor((a.walk||0)*WALK_FRAMES)%4+4)%4:((t+(a.id??0)*.37)%1.2<.6?'idle0':'idle1'),carry=o.bag?.length?o.bag.map(b=>b.type).slice(0,3):null,key=`a:${kind}:${o.role??''}:${o.top??''}:${frame}:${carry??''}`;
    actors.add(sprite(key,()=>{const c=P.drawCast(kind,{role:o.role,top:o.top,frame,carry});return{canvas:c,ax:14,ay:40};}),a.x,a.y,o.sit?.46:0,{flip:(a.face??1)<0,near:.06});};
@@ -1984,15 +2018,17 @@ float pat(){vec2 u=tri();
   const bw=rw+2,bh=rh+2;if(!rt||rt.width!==bw||rt.height!==bh){rt?.dispose();rt=new THREE.WebGLRenderTarget(bw,bh,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthTexture:new THREE.DepthTexture(bw,bh)});rt.depthTexture.minFilter=rt.depthTexture.magFilter=THREE.NearestFilter;const u=post.material.uniforms;u.tCol.value=rt.texture;u.tDepth.value=rt.depthTexture;u.res.value.set(bw,bh);u.view.value.set(rw,rh);}
   Object.assign(cam,{left:-bw/D/2,right:bw/D/2,top:bh/D/2,bottom:-bh/D/2});cam.updateProjectionMatrix();
   // The camera looks a little behind the manager, toward the counter, and stays over the open café.
-  const px=Math.max(5,Math.min(g.zones*TAIL_ZONE_W/U-5,X(g.player.x)+.6)),pz=Math.max(3,Math.min((g.player.x<TAIL_ZONE_W?HALL:DEEP)-4.5,Z(g.player.y)-2.2)),now=performance.now()/1000,dt=Math.min(.1,now-last);last=now;if(tx===null){tx=px;tz=pz;}else{const k=Math.min(1,dt*5);tx+=(px-tx)*k;tz+=(pz-tz)*k;}
+  const px=Math.max(5,Math.min(g.zones*TAIL_ZONE_W/U-5,X(g.player.x)+.6)),pz=Math.max(3,Math.min(deepAt(g.player.x)-4.5,Z(g.player.y)-2.2)),now=performance.now()/1000,dt=Math.min(.1,now-last);last=now;if(tx===null){tx=px;tz=pz;}else{const k=Math.min(1,dt*5);tx+=(px-tx)*k;tz+=(pz-tz)*k;}
   // The scene is drawn from the camera put on a whole art pixel, so every pixel stays crisp; what that
   // rounding took off is given back by sliding the finished picture, so the camera still glides.
   cam.position.set(tx,0,tz).addScaledVector(toCam,80);cam.lookAt(tx,0,tz);c0.copy(cam.position);snap(cam.position);cam.updateMatrixWorld();c0.sub(cam.position).negate();shift.set(c0.dot(right)*D,c0.dot(upAxis)*D);post.material.uniforms.shift.value.copy(shift);
   // The sun stays put over the area the manager is in, so its shadows hold still instead of crawling
   // a pixel at a time while the camera glides.
-  const area=Math.min(g.zones-1,Math.max(0,Math.floor(g.player.x/TAIL_ZONE_W))),ax=area*TAIL_ZONE_W/U+13,az=(area?DEEP:HALL)/2;if(sun.target.position.x!==ax||sun.target.position.z!==az){sun.position.set(ax-10,22,az+12);sun.target.position.set(ax,0,az);sun.target.updateMatrixWorld();}
-  // Evening dims the sun and warms the room a little.
-  const hour=tailClock(g).hour,dusk=Math.max(0,Math.min(1,(hour-17.5)/2));sun.intensity=2.5-1.5*dusk;sky.intensity=1.7-.5*dusk;return true;}
+  const area=Math.min(g.zones-1,Math.max(0,Math.floor(g.player.x/TAIL_ZONE_W))),ax=area*TAIL_ZONE_W/U+13,az=deepAt(area*TAIL_ZONE_W)/2;if(sun.target.position.x!==ax||sun.target.position.z!==az){sun.position.set(ax-10,22,az+12);sun.target.position.set(ax,0,az);sun.target.updateMatrixWorld();}
+  // Evening dims the sun and turns it amber, warms the sky light, and brings the café's own lamps up, so
+  // the room glows instead of just getting darker.
+  const hour=tailClock(g).hour,dusk=Math.max(0,Math.min(1,(hour-17.5)/2));sun.intensity=2.5-.9*dusk;sun.color.lerpColors(SUN_DAY,SUN_DUSK,dusk);sky.intensity=1.7+.3*dusk;sky.color.lerpColors(SKY_DAY,SKY_DUSK,dusk);sky.groundColor.lerpColors(GROUND_DAY,GROUND_DUSK,dusk);for(const l of lamps)l.intensity=l.userData.base*(1+2.2*dusk);WARM.value=dusk;return true;}
+ const SUN_DAY=new THREE.Color(0xffdcae),SUN_DUSK=new THREE.Color(0xffa463),SKY_DAY=new THREE.Color(0xd8e4ff),SKY_DUSK=new THREE.Color(0xffcf9e),GROUND_DAY=new THREE.Color(0xb89c78),GROUND_DUSK=new THREE.Color(0xa8784e);
  // The pixel pass: one screen-sized quad reads the small picture without smoothing, darkens the edge of anything
  // that stands clearly in front of its neighbour, and lightly marks creases where a surface turns.
  const postCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1),postScene=new THREE.Scene(),post=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:{tCol:{value:null},tDepth:{value:null},res:{value:new THREE.Vector2(1,1)},view:{value:new THREE.Vector2(1,1)},shift:{value:new THREE.Vector2()}},
