@@ -471,31 +471,41 @@ function cafePathDistance(points,x,y){let best=Infinity;for(let i=1;i<points.len
 const TAIL_ZONE_W=1040;
 const TAIL_ZONES=['hall','terrace','garden','lake'];
 const TAIL_ZONE_PRICES=[0,3000,10000,22500];
-// The café is a wide, low strip so a phone held sideways shows its full height: the back bar on top,
-// two rows of tables below, the door at the bottom edge. It grows sideways, never up or down.
-const TAIL_WORLD={w:4160,h:460,minX:72,minY:182,maxY:440};
-// Every station is worked from one line just in front of the back counter.
+// The café is seen from the front at 45 degrees. The hall is deep: the kitchen and the office sit behind
+// its left wall, the back bar runs along the top, a front counter in two pieces keeps a staff aisle
+// behind it, and the door is at the front right. The outdoor areas join the hall sideways and are
+// shallower (OUTDOOR_Y).
+const TAIL_WORLD={w:4160,h:740,minX:72,minY:182,maxY:705};
+const OUTDOOR_Y=440;
+// Every station is worked from one line just in front of the back counters: the oven and the sink in
+// the kitchen, the espresso machine and the thyme bar on the back bar. The kitchen door is on that line.
 const TAIL_BAR_Y=196;
-const TAIL_SPOTS={stock:{x:125,y:196},herb:{x:255,y:196},brew:{x:445,y:196},kitchen:{x:650,y:196},sink:{x:845,y:196},till:{x:175,y:344},pickup:{x:440,y:430},shop:{x:124,y:412},door:{x:510,y:438}};
-// Groups wait in a little lobby beside the till instead of a single-file line.
-const TAIL_LOBBY=[{x:290,y:255},{x:365,y:255},{x:290,y:310},{x:365,y:310},{x:290,y:365},{x:365,y:365},{x:240,y:412},{x:350,y:412}];
-const T=(x,y,seats)=>({x,y,seats,zone:Math.floor(x/TAIL_ZONE_W)});
+const TAIL_SPOTS={stock:{x:96,y:214},herb:{x:660,y:196},brew:{x:480,y:196},kitchen:{x:160,y:196},sink:{x:270,y:196},till:{x:870,y:222},pickup:{x:440,y:310},shop:{x:190,y:450},door:{x:920,y:700}};
+// Groups wait in a lane by the door, in front of the till end of the counter.
+const TAIL_LOBBY=[{x:895,y:322},{x:945,y:322},{x:895,y:388},{x:945,y:388},{x:895,y:454},{x:945,y:454},{x:895,y:520},{x:945,y:520}];
+// Walls and fixed furniture of the hall, as [x0,y0,x1,y1]: the back rooms' wall with the kitchen door on
+// the station line and the office door further down, the walls between kitchen, office and the staff
+// lounge, the kitchen's prep island and fridge, the two pieces of the front counter with a pass-through
+// between them, and the banquette along the left wall.
+const TAIL_WALLS=[[316,250,324,372],[316,420,324,740],[72,356,324,364],[72,536,324,740],[120,250,250,300],[266,296,307,350],[395,247,470,285],[672,247,904,285],[324,436,338,705]];
+const T=(x,y,seats,geom=seats)=>({x,y,seats,geom,zone:Math.floor(x/TAIL_ZONE_W)});
 const TAIL_TABLES=[
- // Hall: a banquette row of café tables for two behind the counter aisle, and three four-seaters in
- // front with room to walk between them; the left of the hall stays free for the queue and the door.
- T(665,268,2),T(770,268,2),T(600,385,4),T(765,385,4),T(560,268,2),T(920,385,4),T(455,268,2),T(875,268,2),
+ // Hall: tables for two on the banquette along the left wall, three four-seaters in the middle and two
+ // more tables for two near the front, all with room to walk between them.
+ T(380,470,2,'2l'),T(380,550,2,'2l'),T(560,400,4),T(740,400,4),T(380,630,2,'2l'),T(650,560,4),T(500,660,2),T(802,660,2),
  // Terrace bistro tables alternate twos and fours.
  ...[100,245,390,535,680,825,970].flatMap((x,i)=>[T(1040+x,280,i%2?2:4),T(1040+x,385,i%2?4:2)]),
  // Garden: long party tables up top, four-seaters below.
  ...[130,335,540,745,950].map(x=>T(2080+x,280,6)),...[100,245,390,535,680,825,970].map(x=>T(2080+x,385,4)),
  // Lakeside boardwalk: little tables for two.
  ...[90,213,336,459,582,705,828,950].flatMap(x=>[T(3120+x,280,2),T(3120+x,385,2)])];
-const TAIL_TABLE_GEOM={2:{hw:30,hh:20,seats:[[-18,-30],[18,-30]]},4:{hw:42,hh:26,seats:[[-54,-2],[54,-2],[-18,-38],[18,-38]]},6:{hw:76,hh:32,seats:[[-88,-2],[88,-2],[-48,-42],[-16,-42],[16,-42],[48,-42]]}};
+// A banquette table ('2l') seats both guests on its left, side by side, and is approached from its right.
+const TAIL_TABLE_GEOM={'2l':{hw:30,hh:20,seats:[[-40,-12],[-40,12]],approach:[50,0]},2:{hw:30,hh:20,seats:[[-18,-30],[18,-30]]},4:{hw:42,hh:26,seats:[[-54,-2],[54,-2],[-18,-38],[18,-38]]},6:{hw:76,hh:32,seats:[[-88,-2],[88,-2],[-48,-42],[-16,-42],[16,-42],[48,-42]]}};
 // Producers. Outer zones bring their own outdoor bar, grill or cold-drinks boat.
-const TAIL_STATIONS=[{kind:'coffee',x:445,zone:0},{kind:'herb',x:255,zone:0},{kind:'kitchen',x:650,zone:0},{kind:'coffee',x:1340,zone:1},{kind:'kitchen',x:2380,zone:2},{kind:'herb',x:3420,zone:3}];
+const TAIL_STATIONS=[{kind:'coffee',x:480,zone:0},{kind:'herb',x:660,zone:0},{kind:'kitchen',x:160,zone:0},{kind:'coffee',x:1340,zone:1},{kind:'kitchen',x:2380,zone:2},{kind:'herb',x:3420,zone:3}];
 // Dirty tubs go to the sink, or to the dish cart in each outer zone.
-const TAIL_DROPS=[{x:845,y:196,zone:0},{x:1800,y:196,zone:1},{x:2840,y:196,zone:2},{x:3880,y:196,zone:3}];
-const TAIL_GATES=[{x:510,y:438},{x:1560,y:438},{x:2600,y:438},{x:3640,y:438}];
+const TAIL_DROPS=[{x:270,y:196,zone:0},{x:1800,y:196,zone:1},{x:2840,y:196,zone:2},{x:3880,y:196,zone:3}];
+const TAIL_GATES=[{x:920,y:700},{x:1560,y:438},{x:2600,y:438},{x:3640,y:438}];
 // cost is the ingredients used when an item is started (or a pastry baked), whether or not it sells.
 const TAIL_MENU={espresso:{price:18,cost:6,time:5.4,prep:2.3,kind:'coffee'},latte:{price:24,cost:8,time:7,prep:2.3,milk:1.4,kind:'coffee'},thyme:{price:30,cost:10,time:4.6,prep:1,kind:'herb'},croissant:{price:16,cost:5,kind:'kitchen',pastry:true,food:true},sandwich:{price:34,cost:12,time:8,prep:1.6,kind:'kitchen',food:true}};
 // Each upgrade lists the price of every level in order; a save stores the owned level.
@@ -515,9 +525,11 @@ const TAIL_BEANS=20;
 // The terrace bar shares the hall's bean shelf, so the shelf doubles once the terrace opens.
 function tailBeanCap(g){return g.zones>1?TAIL_BEANS*2:TAIL_BEANS;}
 const TAIL_DAY=180;
-// The manager's walking pace, then each level of the speed upgrade.
-const TAIL_PLAYER_SPEED=[230,295,335,375];
-const STAFF_SPEED={cashier:[120,140,160],barista:[130,150,170],cook:[125,145,165],runner:[150,175,200],busser:[114,150,165]};
+// The manager's walking pace, then each level of the speed upgrade. The deep hall with its back rooms
+// made every round longer, so the manager walks 15% and the staff 30% faster than in the old strip
+// hall, which keeps a month's takings where they were (scripts/sim-growth.mjs).
+const TAIL_PLAYER_SPEED=[265,340,385,430];
+const STAFF_SPEED={cashier:[156,182,208],barista:[169,195,221],cook:[162,188,214],runner:[195,228,260],busser:[148,195,214]};
 function tailLevel(g,key){return +g.upgrades[key]||0;}
 function tailPrice(g,key){return Object.hasOwn(TAIL_UPGRADES,key)?TAIL_UPGRADES[key][tailLevel(g,key)]??null:null;}
 function tailStaffCount(g,role){return g.staffCount[role]??0;}
@@ -553,15 +565,19 @@ function rand(g){g.rng=(g.rng+0x6D2B79F5)|0;let t=g.rng;t=Math.imul(t^t>>>15,t|1
 const pick=(g,list)=>list[Math.floor(rand(g)*list.length)];
 
 // ---- Walking -------------------------------------------------------------------------------
-function tailSolid(x,y,g){if(x<72||x>g.zones*TAIL_ZONE_W-72||y<TAIL_WORLD.minY||y>TAIL_WORLD.maxY)return true;if(x>98&&x<245&&y>249&&y<317||tailOfficeWall(x,y))return true;for(const t of g.tables)if(t.open&&Math.abs(x-t.x)<t.hw&&Math.abs(y-t.y)<t.hh)return true;return false;}
+function tailSolid(x,y,g){if(x<72||x>g.zones*TAIL_ZONE_W-72||y<TAIL_WORLD.minY||y>TAIL_WORLD.maxY)return true;if(x>=TAIL_ZONE_W&&y>OUTDOOR_Y)return true;if(x<TAIL_ZONE_W)for(const[x0,y0,x1,y1]of TAIL_WALLS)if(x>x0&&x<x1&&y>y0&&y<y1)return true;for(const t of g.tables)if(t.open&&Math.abs(x-t.x)<t.hw&&Math.abs(y-t.y)<t.hh)return true;return false;}
 function tailLineClear(g,a,b){const d=tailDistance(a,b),steps=Math.max(1,Math.ceil(d/4));for(let i=0;i<=steps;i++){if(tailSolid(a.x+(b.x-a.x)*i/steps,a.y+(b.y-a.y)*i/steps,g))return false;}return true;}
 const STEP=22,COLS=Math.ceil(TAIL_WORLD.w/STEP)+1,ROWS=Math.ceil(TAIL_WORLD.h/STEP)+1;
 // The walk grid only changes when tables or zones open, so it is rebuilt then instead of per search.
-function tailGrid(g){if(g.grid?.layout===g.layout)return g.grid.cells;const cells=new Uint8Array(COLS*ROWS);for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)cells[y*COLS+x]=tailSolid(x*STEP,y*STEP,g)?1:0;g.grid={layout:g.layout,cells};return cells;}
-function tailPath(g,from,to){const cells=tailGrid(g),blocked=(x,y)=>x<0||y<0||x>=COLS||y>=ROWS||cells[y*COLS+x]===1;
+// Walls are thinner than a cell, so each step to the next cell east or south is also checked for a wall
+// in between (cut: bit 1 east, bit 2 south).
+function tailGrid(g){if(g.grid?.layout===g.layout)return g.grid;const cells=new Uint8Array(COLS*ROWS),cut=new Uint8Array(COLS*ROWS);for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)cells[y*COLS+x]=tailSolid(x*STEP,y*STEP,g)?1:0;
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const k=y*COLS+x,a={x:x*STEP,y:y*STEP};if(cells[k])continue;if(x+1<COLS&&!cells[k+1]&&!tailLineClear(g,a,{x:a.x+STEP,y:a.y}))cut[k]|=1;if(y+1<ROWS&&!cells[k+COLS]&&!tailLineClear(g,a,{x:a.x,y:a.y+STEP}))cut[k]|=2;}
+ g.grid={layout:g.layout,cells,cut};return g.grid;}
+function tailPath(g,from,to){const{cells,cut}=tailGrid(g),blocked=(x,y)=>x<0||y<0||x>=COLS||y>=ROWS||cells[y*COLS+x]===1,walled=(k,dx,dy)=>dx>0?cut[k]&1:dx<0?cut[k-1]&1:dy>0?cut[k]&2:cut[k-COLS]&2;
  const nearest=(p,connect)=>{const cx=Math.round(p.x/STEP),cy=Math.round(p.y/STEP);let best=null,d=Infinity;for(let r=0;r<=9&&!best;r++)for(let y=cy-r;y<=cy+r;y++)for(let x=cx-r;x<=cx+r;x++){if(Math.max(Math.abs(x-cx),Math.abs(y-cy))!==r||blocked(x,y))continue;const q={x:x*STEP,y:y*STEP};if(connect&&!tailLineClear(g,p,q))continue;const v=tailDistance(p,q);if(v<d){d=v;best={x,y};}}return best;};
  const start=nearest(from,true),end=nearest(to,!tailSolid(to.x,to.y,g));if(!start||!end)return[];const first=start.y*COLS+start.x,last=end.y*COLS+end.x,came=new Int32Array(COLS*ROWS).fill(-2),queue=[first];came[first]=-1;
- for(let i=0;i<queue.length;i++){const k=queue[i];if(k===last)break;const x=k%COLS,y=(k-x)/COLS;for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(blocked(nx,ny))continue;const n=ny*COLS+nx;if(came[n]!==-2)continue;came[n]=k;queue.push(n);}}
+ for(let i=0;i<queue.length;i++){const k=queue[i];if(k===last)break;const x=k%COLS,y=(k-x)/COLS;for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(blocked(nx,ny)||walled(k,dx,dy))continue;const n=ny*COLS+nx;if(came[n]!==-2)continue;came[n]=k;queue.push(n);}}
  if(came[last]===-2)return[];const out=[];for(let k=last;k!==first;k=came[k])out.push({x:k%COLS*STEP,y:Math.floor(k/COLS)*STEP});out.push({x:start.x*STEP,y:start.y*STEP});out.reverse();
  // Straight runs collapse to their corners so walkers glide instead of stepping cell by cell.
  const lean=[out[0]];for(let i=1;i<out.length-1;i++){const a=lean.at(-1),b=out[i+1];if(!tailLineClear(g,a,b))lean.push(out[i]);}if(out.length>1)lean.push(out.at(-1));if(!tailSolid(to.x,to.y,g))lean.push({...to});return lean;}
@@ -572,7 +588,7 @@ function tailSlow(g,a){return g.spills.some(s=>Math.abs(a.x-s.x)<34&&Math.abs(a.
 function tailWalk(g,a,dt,speed){a.moving=false;if(!a.path?.length)return;let budget=dt*speed*tailSlow(g,a);while(a.path.length&&budget>0){const p=a.path[0],d=tailDistance(a,p);if(d<.5){a.path.shift();continue;}const step=Math.min(d,budget),dx=(p.x-a.x)/d,dy=(p.y-a.y)/d;const nx=a.x+dx*step,ny=a.y+dy*step;if(tailSolid(nx,ny,g)){const slideX=!tailSolid(nx,a.y,g),slideY=!slideX&&!tailSolid(a.x,ny,g);if(!slideX&&!slideY){a.path=tailPath(g,a,a.path.at(-1));break;}if(slideX)a.x=nx;else a.y=ny;a.moving=true;a.walk+=step*.08;budget-=step;continue;}a.x=nx;a.y=ny;if(Math.abs(dx)>.1)a.face=dx>0?1:-1;a.moving=true;a.walk+=step*.08;budget-=step;if(step===d)a.path.shift();}}
 // Seated and trailing guests glide straight to short targets; they never block anyone.
 function tailGlide(a,to,dt,speed){const d=tailDistance(a,to);a.moving=d>1;if(!a.moving)return true;const s=Math.min(d,speed*dt);a.x+=(to.x-a.x)/d*s;a.y+=(to.y-a.y)/d*s;if(Math.abs(to.x-a.x)>1)a.face=to.x>a.x?1:-1;a.walk+=s*.08;return d-s<1;}
-function tailRelocate(g){for(const a of[g.player,...g.staff,...g.groups.flatMap(v=>v.members)]){if(!tailSolid(a.x,a.y,g))continue;let best=null,d=Infinity;for(let y=198;y<=436;y+=22)for(let x=88;x<g.zones*TAIL_ZONE_W-80;x+=22){if(tailSolid(x,y,g))continue;const v=Math.hypot(a.x-x,a.y-y);if(v<d){best={x,y};d=v;}}if(best){a.x=best.x;a.y=best.y;}}for(const a of[g.player,...g.staff,...g.groups.map(v=>v.members[0])]){const target=a.path?.at(-1);if(target)a.path=tailPath(g,a,target);}}
+function tailRelocate(g){for(const a of[g.player,...g.staff,...g.groups.flatMap(v=>v.members)]){if(!tailSolid(a.x,a.y,g))continue;let best=null,d=Infinity;for(let y=198;y<=TAIL_WORLD.maxY;y+=22)for(let x=88;x<g.zones*TAIL_ZONE_W-80;x+=22){if(tailSolid(x,y,g))continue;const v=Math.hypot(a.x-x,a.y-y);if(v<d){best={x,y};d=v;}}if(best){a.x=best.x;a.y=best.y;}}for(const a of[g.player,...g.staff,...g.groups.map(v=>v.members[0])]){const target=a.path?.at(-1);if(target)a.path=tailPath(g,a,target);}}
 
 // ---- Saves ---------------------------------------------------------------------------------
 // v3 stored owned upgrades as true; they become level 1. v3–v5 kept a "table" level (2–4 tables)
@@ -591,7 +607,7 @@ function tailValidSave(raw){if(!raw||![3,4,5,6,7].includes(raw.version))return n
 // The play log stays in this browser. Anything malformed is dropped instead of failing the save.
 const TAIL_LOG_MAX=60;
 function tailCleanLog(raw){if(!Array.isArray(raw))return[];const key=k=>/^[a-zA-Z]{1,16}$/.test(k);return raw.slice(-TAIL_LOG_MAX).filter(e=>e&&typeof e==='object'&&Number.isInteger(e.day)).map(e=>{const out={};for(const [k,v]of Object.entries(e).slice(0,60)){if(!key(k))continue;if(Number.isFinite(v)||typeof v==='string'&&v.length<=40)out[k]=v;else if(Array.isArray(v))out[k]=v.filter(x=>typeof x==='string'&&x.length<=16).slice(0,12);else if(v&&typeof v==='object')out[k]=Object.fromEntries(Object.entries(v).filter(([a,x])=>key(a)&&Number.isFinite(x)).slice(0,12));}return out;});}
-function tailTable(def,id,open){const geom=TAIL_TABLE_GEOM[def.seats];return{...def,id,open,hw:geom.hw,hh:geom.hh,ax:def.x,ay:def.y+geom.hh+18,seatAt:geom.seats.map(([dx,dy])=>({x:def.x+dx,y:def.y+dy})),state:'clean',group:null,coins:0,claim:null};}
+function tailTable(def,id,open){const geom=TAIL_TABLE_GEOM[def.geom??def.seats],[adx,ady]=geom.approach??[0,geom.hh+18];return{...def,id,open,hw:geom.hw,hh:geom.hh,ax:def.x+adx,ay:def.y+ady,seatAt:geom.seats.map(([dx,dy])=>({x:def.x+dx,y:def.y+dy})),state:'clean',group:null,coins:0,claim:null};}
 function tailStaffActor(g,role,i,rec={seq:0}){const home=tailHome(g,role,i);return{id:g.nextId++,role,rec,x:home.x,y:home.y,face:-1,walk:0,moving:false,path:[],bag:[],task:null,work:0,think:0};}
 // From the third area on, staff are spread over the open areas by how many tables each area's
 // counter serves: baristas over the coffee and thyme bars, cooks over the kitchens, runners and
@@ -602,7 +618,7 @@ const TAIL_ROLE_KINDS={barista:['coffee','herb'],cook:['kitchen']},TAIL_SPREAD_Z
 function tailHomeZones(g,role){if(g.zones<TAIL_SPREAD_ZONES)return Array(g.staff.filter(v=>v.role===role).length+1).fill(0);const kinds=TAIL_ROLE_KINDS[role],w=Array(g.zones).fill(0);for(const t of g.tables){if(!t.open)continue;if(!kinds){w[t.zone]++;continue;}for(const k of kinds){let best=null;for(const st of g.stations)if(st.open&&st.kind===k&&(!best||Math.abs(st.x-t.x)<Math.abs(best.x-t.x)))best=st;if(best)w[best.zone]++;}}
  const n=g.staff.filter(v=>v.role===role).length+1,got=Array(g.zones).fill(0),out=[];for(let i=0;i<n;i++){let z=0;if(i)for(let v=1;v<g.zones;v++)if(w[v]/(got[v]+1)>w[z]/(got[z]+1))z=v;got[z]++;out.push(z);}return out;}
 function tailAssignZones(g){const key=g.layout+':'+g.staff.length;if(g.zoneKey===key)return;g.zoneKey=key;for(const r of TAIL_ROLES){const zs=tailHomeZones(g,r);g.staff.filter(v=>v.role===r).forEach((s,i)=>{s.zone=r==='cashier'?0:zs[i];});}}
-function tailHome(g,role,i){if(role==='cashier')return{x:135,y:344};const zs=tailHomeZones(g,role),z=zs[i]??0,k=zs.slice(0,i).filter(v=>v===z).length%3;
+function tailHome(g,role,i){if(role==='cashier')return{x:840,y:222};const zs=tailHomeZones(g,role),z=zs[i]??0,k=zs.slice(0,i).filter(v=>v===z).length%3;
  if(TAIL_ROLE_KINDS[role]){const st=g.stations.find(v=>v.open&&v.zone===z&&v.kind===TAIL_ROLE_KINDS[role][0])??g.stations.find(v=>v.open&&v.zone===z&&TAIL_ROLE_KINDS[role].includes(v.kind));if(st)return{x:st.x-30+k*30,y:TAIL_BAR_Y+10};}
  if(role==='runner')return{x:z*TAIL_ZONE_W+540+k*28,y:TAIL_BAR_Y+28};const d=TAIL_DROPS[z];return{x:d.x-30+k*30,y:TAIL_BAR_Y+12};}
 function tailCreate(seed,saved=null){const s=tailValidSave(saved);const up=s?.upgrades??Object.fromEntries(Object.keys(TAIL_UPGRADES).map(k=>[k,0]));
@@ -610,7 +626,7 @@ function tailCreate(seed,saved=null){const s=tailValidSave(saved);const up=s?.up
   weather:'cloudy',plan:null,
  upgrades:up,zones:s?.zones??1,tablesOpen:s?.tables??3,staffCount:{...(s?.staff??Object.fromEntries(TAIL_ROLES.map(r=>[r,0])))},training:{...(s?.training??Object.fromEntries(TAIL_ROLES.map(r=>[r,0])))},layout:0,grid:null,
   beans:12,nextSpawn:3,nextId:1,groups:[],pending:[],staff:[],spills:[],tables:[],stations:[],till:null,action:null,effects:[],alerts:[],notice:'welcome',noticeUntil:6,prompt:'',
-  player:{x:560,y:430,face:1,walk:0,moving:false,bag:[],path:[]},session:null,schedule:[],tasks:[],rush:0,stats:{brewed:0,washed:0,cleared:0,accepted:0,mopped:0,fixed:0}};
+  player:{x:840,y:320,face:1,walk:0,moving:false,bag:[],path:[]},session:null,schedule:[],tasks:[],rush:0,stats:{brewed:0,washed:0,cleared:0,accepted:0,mopped:0,fixed:0}};
  g.tables=TAIL_TABLES.map((v,i)=>tailTable(v,i,i<g.tablesOpen));g.stations=TAIL_STATIONS.map((v,i)=>({...v,id:i,y:TAIL_BAR_Y,open:false,slots:[],ready:[],case:0,oven:null,jam:0,hands:0}));tailRefresh(g);
  g.crew=Object.fromEntries(TAIL_ROLES.map(r=>[r,Array.from({length:tailStaffCount(g,r)},(_,i)=>({seq:s?.hireSeq?.[r]?.[i]??0}))]));tailHireOrder(g);for(const r of TAIL_ROLES)g.crew[r].forEach((rec,i)=>g.staff.push(tailStaffActor(g,r,i,rec)));tailOpenDay(g);return g;}
 function tailSnapshot(g){return{version:7,cash:g.cash,gross:g.gross,served:g.served,lost:g.lost,day:g.day,stars:g.stars,starsSpent:g.starsSpent,nightLevel:g.nightLevel,bestNight:g.bestNight,research:{...g.research},blueprints:{...g.blueprints},upgrades:{...g.upgrades},zones:g.zones,tables:g.tablesOpen,staff:{...g.staffCount},training:{...g.training},log:g.log.map(e=>({...e})),rares:{...g.rares},rareLast:{...g.rareLast},starStreak:g.starStreak,badge:g.badge,boosts:g.boosts.map(b=>({fx:JSON.parse(JSON.stringify(b.fx)),until:b.until})),askedDay:g.askedDay,lastQuestion:g.lastQuestion,hireSeq:Object.fromEntries(TAIL_ROLES.map(r=>[r,g.crew[r].map(c=>c.seq)]))};}
@@ -652,12 +668,11 @@ const TAIL_BUY_TIME=1.2,TAIL_DESK_TIME=.4;
 function tailBuySpots(g){const out=[],t=g.tables[g.tablesOpen],tp=tailTablePrice(g),zp=tailZonePrice(g);if(t&&tp!==null)out.push({id:'table',x:t.x,y:t.y,hw:t.hw-6,hh:t.hh,price:tp});if(zp!==null)out.push({id:'zone',x:g.zones*TAIL_ZONE_W-110,y:TAIL_BAR_Y+8,hw:30,hh:16,price:zp});
  for(const st of g.stations){const price=st.open||st.zone>=g.zones?null:tailPrice(g,st.kind);if(price!==null&&!tailLevel(g,st.kind))out.push({id:'equip'+st.id,key:st.kind,x:st.x,y:TAIL_BAR_Y,hw:st.kind==='herb'?46:64,hh:22,price});}return g.day===1?out.filter(v=>v.id==='table'):out;}
 function tailBuyOnFoot(g,spot){return spot.id==='table'?tailBuyTable(g):spot.id==='zone'?tailBuyZone(g):tailBuy(g,spot.key);}
-// The manager's office fills the hall's bottom-left corner behind a low partition, with the doorway
-// at its top right. Nobody else goes there, so walking in is always on purpose: a moment inside
-// opens the manage panel for hiring and upgrades, once per visit.
-const TAIL_OFFICE={x1:174,y0:384,wallTop:372,door:0,wallRight:196};
-function tailInOffice(a){return a.x<TAIL_OFFICE.x1&&a.y>TAIL_OFFICE.y0;}
-function tailOfficeWall(x,y){const o=TAIL_OFFICE;return y>o.wallTop&&(x>=o.x1&&x<o.wallRight||y<o.y0&&x<o.door);}
+// The manager's office is the back room under the kitchen, with its door onto the hall. Nobody else
+// goes there, so walking in is always on purpose: a moment inside opens the manage panel for hiring
+// and upgrades, once per visit.
+const TAIL_OFFICE={x1:316,y0:364,y1:536};
+function tailInOffice(a){return a.x<TAIL_OFFICE.x1&&a.y>TAIL_OFFICE.y0&&a.y<TAIL_OFFICE.y1;}
 
 // ---- Days, events and tasks ----------------------------------------------------------------
 // Opening hours run 08:00–20:00 across the day; while the last guests finish the clock runs on.
@@ -922,7 +937,7 @@ function tailGo(g,s,task,to){s.task=task;s.path=tailPath(g,s,to);s.work=0;}
 function tailNearestDrop(g,a){return TAIL_DROPS.filter(d=>d.zone<g.zones).sort((x,y)=>tailDistance(a,x)-tailDistance(a,y))[0];}
 function tailStandAt(g,s,st){const others=g.staff.filter(v=>v!==s&&v.task?.kind==='station'&&v.task.st===st.id).length,k=[0,-30,30,-60,60][others%5];return{x:st.x+k,y:TAIL_BAR_Y+10};}
 function tailChoose(g,s){const at=v=>tailDistance(s,v);
- if(s.role==='cashier')return tailGo(g,s,{kind:'till'},{x:135,y:344});
+ if(s.role==='cashier')return tailGo(g,s,{kind:'till'},{x:840,y:222});
  if(s.role==='barista'||s.role==='cook'){const kinds=TAIL_ROLE_KINDS[s.role],mine=g.stations.some(st=>st.open&&!(st.jam>0)&&st.zone===s.zone&&kinds.includes(st.kind));let best=null,score=Infinity;for(const st of g.stations){if(!kinds.includes(st.kind))continue;const work=tailStationWork(g,st),busy=g.staff.filter(v=>v!==s&&v.task?.kind==='station'&&v.task.st===st.id).length;if(work<=busy||g.zones>=TAIL_SPREAD_ZONES&&st.zone!==s.zone&&mine)continue;const v=at(st);if(v<score){score=v;best=st;}}
   if(best)return tailGo(g,s,{kind:'station',st:best.id},tailStandAt(g,s,best));if(s.role==='barista'&&g.beans<8&&!g.staff.some(v=>v.task?.kind==='stock'))return tailGo(g,s,{kind:'stock'},TAIL_SPOTS.stock);}
  if(s.role==='runner'){if(s.bag.length){const groups=[...new Set(s.bag.map(v=>v.group))].filter(gr=>tailServePoint(g,gr)).sort((a,b)=>at(tailServePoint(g,a))-at(tailServePoint(g,b)));const gr=groups[0];if(gr)return tailGo(g,s,{kind:'deliver',group:gr},tailServePoint(g,gr));}
@@ -974,7 +989,7 @@ function tailCloseDay(g){tailInspectEnd(g);g.inspector=null;for(const t of g.tab
  const s=g.session,goal=tailGoal(g.day,tailSeats(g)),quality=s.qualityN?s.qualitySum/s.qualityN:0,allowance=1+Math.floor(s.served*.06),checks=[s.gross>=goal,s.served>0&&s.lost<=allowance,quality>=86&&s.inspect!=='fail'],stars=checks.filter(Boolean).length,bonus=stars*(8+g.day*2);
  g.cash+=bonus;g.stars+=stars;g.starStreak=stars===3?g.starStreak+1:0;
  g.report={day:g.day,goal,served:s.served,gross:s.gross,lost:s.lost,allowance,quality:Math.round(quality),checks,stars,bonus,earned:s.gross+s.taskCoins+bonus,segs:s.segs.map(v=>({...v})),reviews:s.reviews.slice(),rareGuests:s.rares.slice(),items:{...s.items},weather:g.weather,inspect:s.inspect,vipServed:s.vipServed,vipLost:s.vipLost,upsells:s.upsells,spent:s.spent,startCash:s.startCash,endCash:g.cash,answer:s.answer??null,tasks:g.tasks.map(t=>({...t})),taskCoins:s.taskCoins,critic:s.critic,events:s.events};g.report.log=tailLogDay(g,g.report);g.day++;g.phase='closed';}
-function tailNextDay(g){if(g.phase!=='closed')return false;Object.assign(g,{phase:'open',dayTime:0,report:null,nextSpawn:g.time+2,beans:Math.max(g.beans,12),groups:[],pending:[]});Object.assign(g.player,{x:560,y:430,path:[]});g.staff.forEach((s,i)=>{const h=tailHome(g,s.role,g.staff.filter(v=>v.role===s.role).indexOf(s));Object.assign(s,{x:h.x,y:h.y,task:null,path:[]});});tailOpenDay(g);tailNotice(g,'newday');return true;}
+function tailNextDay(g){if(g.phase!=='closed')return false;Object.assign(g,{phase:'open',dayTime:0,report:null,nextSpawn:g.time+2,beans:Math.max(g.beans,12),groups:[],pending:[]});Object.assign(g.player,{x:840,y:320,path:[]});g.staff.forEach((s,i)=>{const h=tailHome(g,s.role,g.staff.filter(v=>v.role===s.role).indexOf(s));Object.assign(s,{x:h.x,y:h.y,task:null,path:[]});});tailOpenDay(g);tailNotice(g,'newday');return true;}
 // The dirty table to clear when guests are waiting, every clean table is too small or taken, and
 // nobody else will clear it. A new player sees free-looking tables and wonders why seating fails.
 function tailNoSeat(g){if(tailStaffCount(g,'busser'))return null;const queued=g.groups.filter(v=>v.state==='queue');if(!queued.length||queued.some(v=>g.tables.some(t=>t.open&&t.state==='clean'&&t.seats>=v.size)))return null;const dirty=g.tables.filter(t=>t.open&&t.state==='dirty').sort((a,b)=>tailDistance(g.player,{x:a.ax,y:a.ay})-tailDistance(g.player,{x:b.ax,y:b.ay}));return dirty.find(t=>queued.some(v=>t.seats>=v.size))??dirty[0]??null;}
@@ -1667,7 +1682,7 @@ return{drawCast,CAST_W,CAST_H,SWEATERS,APRON,shade,light,ink,propCanvas,S,espres
 
 
 
-// Tail & Thyme in 3D pixel art (the view=iso prototype). An orthographic camera looks into the café from the
+// Tail & Thyme in 3D pixel art, the café's own view. An orthographic camera looks into the café from the
 // front right, turned 45 degrees and tilted 30, so floor lines step two pixels across for one down. The scene is
 // drawn into a small picture at D pixels per world unit and enlarged by a whole number (zoom) without smoothing,
 // with outlines added where something stands in front of its neighbour. Walls, floors and counters are 3D with
@@ -1675,10 +1690,10 @@ return{drawCast,CAST_W,CAST_H,SWEATERS,APRON,shade,light,ink,propCanvas,S,espres
 // drawn in two batches, each sprite sorted by the point where it stands. The floor plan is the model's own: x runs
 // along the counter and y from the counter to the door, stretched by DEPTH. Markers, bubbles and tags are
 // tail-art.mjs's overlay, placed through this camera.
-const U=40,DEPTH=1.5,BACK=130,FRONT=470,YAW=Math.PI/4,PITCH=Math.PI/6,WALL=3.4,D=20,P=TAIL_PIXEL;
-const X=x=>x/U,Z=y=>(y-BACK)*DEPTH/U,DEEP=Z(FRONT);
+const U=40,DEPTH=1.5,BACK=130,FRONT=470,HALL_FRONT=720,YAW=Math.PI/4,PITCH=Math.PI/6,WALL=3.4,D=20,P=TAIL_PIXEL;
+const X=x=>x/U,Z=y=>(y-BACK)*DEPTH/U,DEEP=Z(FRONT),HALL=Z(HALL_FRONT);
 // Nordic palette: warm white walls, pale ash floor, birch, linen and muted sage, dusty blue and mustard.
-const C={wall:0xf4f0e9,wall2:0xece6dc,wain:0xe2e7dc,birch:0xe6cca0,birchDk:0xc09c6c,oak:0xb98a5a,white:0xf7f5f0,char:0x4b5052,ink:0x2f3436,sage:0xa9b9a0,linen:0xdcd5c8,steel:0xc9cdcc,steelDk:0x8c9391,glass:0xd6e8ea};
+const C={mustard:0xd9b35e,sageDk:0x6f8a77,walnut:0x8a6a52,wall2:0xece6dc,wain:0xe2e7dc,birch:0xe6cca0,birchDk:0xc09c6c,oak:0xb98a5a,white:0xf7f5f0,char:0x4b5052,ink:0x2f3436,sage:0xa9b9a0,linen:0xdcd5c8,steel:0xc9cdcc,steelDk:0x8c9391,glass:0xd6e8ea};
 // Each outdoor area dresses its tables and chairs in its own colours: table top, legs, chair seats, chair wood.
 const ZONE=[{top:'#e2c596',leg:'#8d6440',round:'#f4f1ea',base:'#4b5052',seats:['#f4f1ea','#a9b9a0','#9fb4c5','#d9b35e'],wood:'#b98a5a'},{top:'#eeeae2',leg:'#7d8783',round:'#eeeae2',base:'#7d8783',seats:['#e9e6dd','#c46f52'],wood:'#9aa3a0'},{top:'#c99a68',leg:'#6b4a33',round:'#c99a68',base:'#6b4a33',seats:['#d9b35e','#cf8f5a'],wood:'#8d6440'},{top:'#8a6a52',leg:'#3e2e24',round:'#8a6a52',base:'#3e2e24',seats:['#9fb4c5','#7f9ab0'],wood:'#6f533f'}];
 const RARE_KIND={tycoon:'fox',astronaut:'rabbit',rocker:'hedgehog',prince:'deer',detective:'owl',magician:'rabbit',influencer:'deer',sleepy:'hedgehog',granny:'fox',founder:'binturong'},RARE_COAT={tycoon:'#2b2f45',astronaut:'#e8ecef',rocker:'#24242a',prince:'#7a2f4a',detective:'#b39a6a',magician:'#3b2a5a',influencer:'#f2a7c0',sleepy:'#9fb6d8',granny:'#9a6f8a',founder:'#8a6a46'};
@@ -1729,25 +1744,36 @@ float pat(){vec2 u=tri();
  const tilesTex=tex(256,64,(c,w,h)=>{c.fillStyle='#faf9f5';c.fillRect(0,0,w,h);c.strokeStyle='#e0dcd2';c.lineWidth=2;for(let x=0;x<=w;x+=32)c.strokeRect(x,0,32,h/2),c.strokeRect(x-16,h/2,32,h/2);});
  const texMat=(t,rx,ry)=>{const m=t.clone();m.needsUpdate=true;m.repeat.set(rx,ry);return pixelShade(new THREE.MeshLambertMaterial({map:m}));};
  // The forest round the café.
- const forest=new THREE.Group();scene.add(forest);box(forest,-60,-1,-40,180,-.34,60,0x2f5a43,false);for(let i=0;i<70;i++){const x=-14+(i*37.3)%130,z=-3-((i*13.7)%14),r=1.6+(i*.37)%1.6;ball(forest,x,r*.8,z,r,i%3?0x3a6a4c:0x2e5a43,.85);}for(let i=0;i<14;i++)ball(forest,-3-(i*2.3)%9,1.4,(i*4.1)%DEEP,1.5+(i%3)*.4,i%2?0x3a6a4c:0x467654,.85);bake(forest);
- // ---- the hall: floor, walls, windows, the long counter, the till counter, the office corner, rug and banquette ----
- function hall(G){const d=DEEP;box(G,0,-.3,0,26,0,d,texMat(floorTex.hall,26/4,d/2),false);
+ const forest=new THREE.Group();scene.add(forest);box(forest,-60,-1,-40,180,-.34,60,0x2f5a43,false);for(let i=0;i<70;i++){const x=-14+(i*37.3)%130,z=-3-((i*13.7)%14),r=1.6+(i*.37)%1.6;ball(forest,x,r*.8,z,r,i%3?0x3a6a4c:0x2e5a43,.85);}for(let i=0;i<20;i++)ball(forest,-3-(i*2.3)%9,1.4,(i*4.1)%HALL,1.5+(i%3)*.4,i%2?0x3a6a4c:0x467654,.85);bake(forest);
+ // ---- the hall, after the model's floor plan: the kitchen, the office and the staff lounge behind waist-high
+ // walls on the left, the back bar along the top, the front counter in two pieces (pickup and till) with the
+ // staff aisle behind it, a banquette on the left wall, and the queue lane by the door on the right ----
+ const wb=(G,x0,y0,x1,y1,h0,h1,c,cast)=>box(G,X(x0),h0,Z(y0),X(x1),h1,Z(y1),c,cast);
+ function hall(G){const d=HALL,low=1.05;
+  wb(G,324,130,1040,HALL_FRONT,-.3,0,texMat(floorTex.hall,(1040-324)/160,d/2),false);wb(G,0,130,316,360,-.3,0,texMat(floorTex.tile,8,4),false);wb(G,0,360,316,540,-.3,0,texMat(floorTex.deck,8,4),false);wb(G,0,540,316,HALL_FRONT,-.3,0,texMat(floorTex.hall,8,4),false);
   box(G,-.3,-.3,-.3,26,WALL,0,C.wall2);box(G,-.3,-.3,0,0,WALL,d,C.wall);box(G,0,0,0,26,.12,.05,C.birchDk,false);box(G,0,0,0,.05,.12,d,C.birchDk,false);
-  const glassM=mat(C.glass,{emissive:0x8fb1a0,emissiveIntensity:.35});for(const x of[170,480,790]){const cx=X(x);box(G,cx-2.25,1.9,0,cx+2.25,3.1,.06,C.white,false);box(G,cx-2.1,2.02,.04,cx+2.1,2.98,.08,glassM,false);box(G,cx-.04,2.02,.08,cx+.04,2.98,.1,C.white,false);box(G,cx-2.1,2.47,.08,cx+2.1,2.53,.1,C.white,false);}
-  {const z0=Z(250),z1=Z(390);box(G,0,1.5,z0,.06,3,z1,C.white,false);box(G,.04,1.62,z0+.12,.08,2.88,z1-.12,glassM,false);box(G,.08,1.62,(z0+z1)/2-.04,.1,2.88,(z0+z1)/2+.04,C.white,false);}
-  box(G,X(54),0,Z(140),X(986),1,Z(184),C.white);for(let x=60;x<980;x+=46)box(G,X(x),.12,Z(184),X(x+42),.92,Z(184)+.02,0xefece4,false);box(G,X(48),1,Z(136),X(992),1.07,Z(190),C.birch);
-  const tiles=tilesTex.clone();tiles.needsUpdate=true;tiles.repeat.set(23,1);box(G,X(54),1.07,0,X(986),1.8,.03,pixelShade(new THREE.MeshLambertMaterial({map:tiles})),false);
-  for(const[a,b]of[[270,390],[560,640]]){box(G,X(a),2.2,0,X(b),2.26,.32,C.birch);for(let x=a+12;x<b-6;x+=22)cyl(G,X(x),.16,.09,2.26,2.5,x%44<22?0xe7d7bb:0xcfdcd4);}
-  box(G,X(815),1.0,Z(150),X(875),1.08,Z(178),C.steelDk);box(G,X(900),1.5,.02,X(992),2.95,.1,C.oak,false);box(G,X(905),1.56,.09,X(987),2.89,.12,C.ink,false);for(let i=0;i<6;i++)box(G,X(912),2.7-i*.19,.12,X(912)+.9+(i*.17)%.5,2.72-i*.19,.13,0xf3e6c8,false);
-  box(till,X(96),0,Z(240),X(246),1,Z(316),fadeM[0]);box(till,X(90),1,Z(236),X(252),1.07,Z(320),fadeM[1]);scene.add(till);
-  box(G,X(80),.01,Z(392),X(168),.02,Z(452),C.sage,false);box(G,X(174),0,Z(372),X(196),1.25,Z(468),C.birch);box(G,X(96),.7,Z(366),X(152),1.6,Z(370),C.ink);
-  box(G,X(452),0,Z(420),X(568),.02,Z(454),C.char,false);box(G,X(518),0,Z(330),X(992),.012,Z(440),pixelShade(new THREE.MeshLambertMaterial({map:rugTex})),false);
-  box(G,X(415),0,Z(226),X(915),.42,Z(252),C.oak);box(G,X(415),.42,Z(228),X(915),.54,Z(252),C.linen);for(let x=420;x<910;x+=50)box(G,X(x),.54,Z(220),X(x+46),1.2,Z(230),C.sage);
-  box(G,.02,0,Z(196),.6,2.6,Z(232),C.birch);for(const y of[.6,1.2,1.8])box(G,.02,y,Z(196),.62,y+.05,Z(232),C.birchDk);}
- // The till counter stands between the camera and whoever works behind it, so it turns see-through while
- // someone is there.
- const till=new THREE.Group(),fadeM=[C.white,C.birch].map(c=>pixelShade(new THREE.MeshLambertMaterial({color:c,transparent:true}),PAT.get(c)??0));let fade=1;
- function fadeTill(g){const behind=[g.player,...g.staff].some(a=>a.x>70&&a.x<272&&a.y<324&&a.y>150),now=behind?.38:1;fade+=(now-fade)*.2;for(const m of fadeM){m.opacity=fade;m.depthWrite=fade>.95;}}
+  const glassM=mat(C.glass,{emissive:0x8fb1a0,emissiveIntensity:.35});
+  for(const x of[160,480,760]){const cx=X(x);box(G,cx-1.9,2.15,0,cx+1.9,3.15,.06,C.white,false);box(G,cx-1.75,2.25,.04,cx+1.75,3.05,.08,glassM,false);box(G,cx-.03,2.25,.08,cx+.03,3.05,.11,C.white,false);}
+  for(const[y0,y1]of[[400,500],[580,690]]){const z0=Z(y0),z1=Z(y1),zm=(z0+z1)/2;box(G,0,1.3,z0,.06,2.9,z1,C.white,false);box(G,.04,1.42,z0+.12,.08,2.78,z1-.12,glassM,false);box(G,.06,1.42,zm-.03,.1,2.78,zm+.03,C.white,false);for(const z of[z0-.25,z1+.05])box(G,.08,1.2,z,.2,3.05,z+.2,C.sageDk);}
+  // waist-high walls of the back rooms, capped in birch; the doors are the gaps
+  for(const[x0,y0,x1,y1]of[[316,130,324,176],[316,250,324,372],[316,420,324,HALL_FRONT],[0,356,324,364],[0,536,324,544]]){wb(G,x0,y0,x1,y1,0,low,C.wall);wb(G,x0-2,y0,x1+2,y1,low,low+.08,C.birch);}
+  // back bar: cabinets, a birch top, tiles, shelves of jars, a bar sink and the menu board
+  wb(G,340,132,920,168,0,1,C.white);for(let x=344;x<916;x+=46)wb(G,x+2,168,x+44,169,.12,.92,0xefece4,false);wb(G,336,130,924,172,1,1.07,C.birch);
+  const tiles=tilesTex.clone();tiles.needsUpdate=true;tiles.repeat.set(14,1);wb(G,336,130,924,131.5,1.07,1.85,pixelShade(new THREE.MeshLambertMaterial({map:tiles})),false);
+  for(const[a,b]of[[560,720],[740,900]]){wb(G,a,130,b,142,2.25,2.31,C.birch);for(let x=a+14;x<b-8;x+=22)cyl(G,X(x),Z(136),.09,2.31,2.55,x%44<22?0xe7d7bb:0xcfdcd4);}
+  wb(G,772,138,828,164,1.03,1.075,C.steelDk);{const cx=X(970);box(G,cx-1.1,1.5,.02,cx+1.1,2.95,.1,C.oak,false);box(G,cx-1.02,1.58,.09,cx+1.02,2.87,.12,C.ink,false);for(let i=0;i<6;i++)box(G,cx-.85,2.68-i*.19,.12,cx-.85+.9+(i*.17)%.5,2.7-i*.19+.025,.13,0xf3e6c8,false);}
+  // the front counter fades while someone works behind it
+  for(const[x0,x1]of[[395,470],[672,904]]){wb(front,x0,247,x1,285,0,1.05,fadeM[0]);wb(front,x0-4,243,x1+4,289,1.05,1.13,fadeM[1]);}scene.add(front);
+  // banquette along the left wall, the rug under the four-seaters, the queue mat by the door
+  wb(G,324,436,354,705,0,.4,C.oak);for(let y=438;y<700;y+=44)wb(G,328,y,354,y+42,.4,.54,C.linen);for(let y=438;y<700;y+=44)wb(G,322,y,332,y+42,.54,1.2,C.sage);
+  wb(G,480,350,820,610,0,.012,pixelShade(new THREE.MeshLambertMaterial({map:rugTex})),false);for(let k=0;k<4;k++)wb(G,880+k*20,684,898+k*20,712,0,.02,k%2?C.char:C.sageDk,false);
+  // office: a sage mat; lounge: an L sofa on a rug
+  wb(G,90,420,230,500,0,.012,C.sage,false);wb(G,20,570,300,700,0,.012,pixelShade(new THREE.MeshLambertMaterial({map:rugTex})),false);
+  wb(G,16,590,62,700,.08,.42,C.linen);wb(G,16,590,32,700,.42,1.02,C.linen);wb(G,62,664,202,704,.08,.42,C.linen);wb(G,62,690,202,704,.42,1.02,C.linen);wb(G,34,604,46,626,.42,.72,C.mustard);wb(G,150,676,176,686,.42,.7,C.sage);}
+ // The front counter stands between the camera and whoever works behind it, so it turns see-through while
+ // someone is in the staff aisle.
+ const front=new THREE.Group(),fadeM=[C.white,C.birch].map(c=>pixelShade(new THREE.MeshLambertMaterial({color:c,transparent:true}),PAT.get(c)??0));let fade=1;
+ function fadeFront(g){const behind=[g.player,...g.staff].some(a=>a.x>380&&a.x<920&&a.y<250),now=behind?.38:1;fade+=(now-fade)*.2;for(const m of fadeM){m.opacity=fade;m.depthWrite=fade>.95;}}
  function outdoor(G,z,open){const x0=z*TAIL_ZONE_W/U,x1=x0+26,d=DEEP;if(!open){box(G,x0,-.3,0,x0+7,-.02,d,0x55705e,false);for(let i=0;i<22;i++){const r=1.3+(i*.41)%1.2;ball(G,x0+8.5+(i*5.3)%17,r*.8,.8+(i*3.7)%(d-1),r,i%3?0x3a6a4c:0x467654,.85);}return;}
   const t=[null,floorTex.tile,floorTex.grass,floorTex.deck][z];box(G,x0,-.3,0,x1,0,d,texMat(t,26/4,d/2),false);
   if(z===1){box(G,x0,0,0,x1,.6,.6,C.birch);for(let x=x0+.8;x<x1;x+=1.4)ball(G,x,.85,.3,.42,x%2.8<1.4?0x6f8f6a:0x89a87f);}
@@ -1782,13 +1808,20 @@ float pat(){vec2 u=tri();
  function sync(g){for(let z=0;z<4;z++){const want=z<g.zones?'open':z===g.zones?'locked':'';if((zones[z]?.state??'')===want)continue;if(zones[z])scene.remove(zones[z].G);zones[z]=null;if(!want)continue;const G=new THREE.Group();z?outdoor(G,z,want==='open'):hall(G);for(const st of g.stations)if(st.zone===z&&z>0&&want==='open')kiosk(G,st);bake(G);scene.add(G);zones[z]={G,state:want};}
   const sig=g.zones+'|'+g.tables.map(t=>t.open?1:0).join('')+'|'+g.stations.map(s=>s.open?1:0).join('');if(sig===staticSig)return;staticSig=sig;props.clear();
   const S=(key,make,x,y,h=0,o)=>props.add(sprite(key,make),x,y,h,o);
-  S('plant:fig',()=>P.plant('fig',1.1),64,236);S('plant:fig2',()=>P.plant('fig',1.2),1000,216,0,{near:.3});S('plant:fern',()=>P.plant('fern',.9,'#c98a6b'),1004,446);S('jars',()=>P.beanJars(),125,160,1.07,{near:.6});S('cups',()=>P.cups(4),845,166,1.07,{near:.6});
-  S('pos',()=>P.pos(),175,276,1.07,{near:.4});S('desk',()=>P.desk(1.05),124,380,0,{near:.2});for(const x of[330,650])S('sconce',()=>P.sconce('back'),x,132,1.9,{near:.1});
-  for(const st of g.stations){if(!st.open||st.zone>=g.zones)continue;const y=st.zone?158:150;if(st.kind==='coffee'){S('espresso',()=>P.espresso(),st.x,y,1.07,{near:.9});S('grinder',()=>P.grinder(),st.x+78,y,1.07,{near:.7});}else if(st.kind==='herb')S('herb',()=>P.herbBar(),st.x,y+1,1.07,{near:.7});else S('bake',()=>P.bakeStation(),st.x,y+2,1.07,{near:.7});}
+  // kitchen: bean shelf, bread rack, deck oven, dish station, prep island, fridge
+  S('beanShelf',()=>P.beanShelf(),26,240);S('breadRack',()=>P.breadRack(),70,151);S('oven',()=>P.oven(),160,152);S('dishUnit',()=>P.dishUnit(),269,152);S('prep',()=>P.prepIsland(),185,275);S('fridge',()=>P.fridge(),287,325);
+  // office and lounge
+  S('desk',()=>P.desk(),150,410,0,{near:.2});S('officeChair',()=>P.officeChair('#9fb4c5'),150,446);S('cabinet',()=>P.cabinet(),262,386);S('plant:office',()=>P.plant('fig',.9,'#c98a6b'),280,505);S('coffeeTable',()=>P.coffeeTable(),140,630);S('floorLamp',()=>P.floorLamp(),262,690);S('plant:lounge',()=>P.plant('fern',.8,'#c98a6b'),40,563);
+  // counters: cups by the bar sink, the pickup shelf, the pastry case and the till
+  S('cups',()=>P.cups(4),852,160,1.07,{near:.6});S('pickup',()=>P.pickup(),432,266,1.13,{near:.4});S('pastry',()=>P.pastryCase(),760,266,1.13,{near:.4});S('pos',()=>P.pos(),872,266,1.13,{near:.4});
+  // the hall: sconces on the back wall, plants in the corners, queue posts and the A-frame by the door
+  for(const x of[372,560,720,880])S('sconce',()=>P.sconce('back'),x,132,2.2,{near:.1});S('plant:fig2',()=>P.plant('fig',1.2),1000,200,0,{near:.3});S('plant:corner',()=>P.plant('fig',1),360,705);
+  for(const[x,y]of[[868,300],[868,400],[868,500],[868,600],[972,300],[972,400],[972,500],[972,600]])S('post',()=>P.post(),x,y);S('aFrame',()=>P.aFrame(),1004,650);
+  for(const st of g.stations){if(!st.open||st.zone>=g.zones)continue;const y=st.zone?158:150;if(st.kind==='kitchen'&&!st.zone)continue;if(st.kind==='coffee'){S('espresso',()=>P.espresso(),st.x,y,1.07,{near:.9});S('grinder',()=>P.grinder(),st.x+78,y,1.07,{near:.7});}else if(st.kind==='herb')S('herb',()=>P.herbBar(),st.x,y+1,1.07,{near:.7});else S('bake',()=>P.bakeStation(),st.x,y+2,1.07,{near:.7});}
   for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones)S('cart',()=>P.dishCart(),d.x,178,0,{near:.3});
   // Tables and their chairs: each chair faces its table; the hall's tables for two stand against the banquette.
   for(const t of g.tables){if(!t.open)continue;const zs=ZONE[t.zone],two=t.seats===2;S(two?`round${t.zone}`:`square${t.zone}`,()=>two?P.roundTable(zs.round,zs.base):P.squareTable(zs.top,zs.leg,zs.wood),t.x,t.y);
-   if(t.zone===0&&two)continue;t.seatAt.forEach((s,i)=>{const dx=s.x-t.x,dy=s.y-t.y,face=Math.abs(dx)>Math.abs(dy)*1.5?(dx<0?'e':'w'):(dy<0?'s':'n'),c=zs.seats[(t.id+i)%zs.seats.length];S(`chair${face}${c}${t.zone}`,()=>P.chair(face,c,zs.wood),s.x,s.y);});}
+   if(t.geom==='2l')continue;t.seatAt.forEach((s,i)=>{const dx=s.x-t.x,dy=s.y-t.y,face=Math.abs(dx)>Math.abs(dy)*1.5?(dx<0?'e':'w'):(dy<0?'s':'n'),c=zs.seats[(t.id+i)%zs.seats.length];S(`chair${face}${c}${t.zone}`,()=>P.chair(face,c,zs.wood),s.x,s.y);});}
   props.done();
   for(const l of lamps)scene.remove(l);lamps.length=0;for(const t of g.tables)if(t.open&&t.zone===0&&t.seats===4){const l=new THREE.PointLight(0xffc27a,5,5.5,1.6);l.position.set(X(t.x),2.7,Z(t.y));scene.add(l);lamps.push(l);}}
  // Animals, and what stands on the tables, change every frame.
@@ -1808,7 +1841,7 @@ float pat(){vec2 u=tri();
   if(!rt||rt.width!==rw||rt.height!==rh){rt?.dispose();rt=new THREE.WebGLRenderTarget(rw,rh,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthTexture:new THREE.DepthTexture(rw,rh)});rt.depthTexture.minFilter=rt.depthTexture.magFilter=THREE.NearestFilter;post.material.uniforms.tCol.value=rt.texture;post.material.uniforms.tDepth.value=rt.depthTexture;post.material.uniforms.res.value.set(rw,rh);}
   Object.assign(cam,{left:-rw/D/2,right:rw/D/2,top:rh/D/2,bottom:-rh/D/2});cam.updateProjectionMatrix();
   // The camera looks a little behind the manager, toward the counter, and stays over the open café.
-  const px=Math.max(5,Math.min(g.zones*TAIL_ZONE_W/U-5,X(g.player.x)+.6)),pz=Math.max(3,Math.min(DEEP-4.5,Z(g.player.y)-2.2)),now=performance.now()/1000,dt=Math.min(.1,now-last);last=now;if(tx===null){tx=px;tz=pz;}else{const k=Math.min(1,dt*5);tx+=(px-tx)*k;tz+=(pz-tz)*k;}
+  const px=Math.max(5,Math.min(g.zones*TAIL_ZONE_W/U-5,X(g.player.x)+.6)),pz=Math.max(3,Math.min((g.player.x<TAIL_ZONE_W?HALL:DEEP)-4.5,Z(g.player.y)-2.2)),now=performance.now()/1000,dt=Math.min(.1,now-last);last=now;if(tx===null){tx=px;tz=pz;}else{const k=Math.min(1,dt*5);tx+=(px-tx)*k;tz+=(pz-tz)*k;}
   cam.position.set(tx,0,tz).addScaledVector(toCam,80);cam.lookAt(tx,0,tz);snap(cam.position);cam.updateMatrixWorld();sun.position.set(tx-10,22,tz+12);sun.target.position.set(tx,0,tz);sun.target.updateMatrixWorld();
   // Evening dims the sun and warms the room a little.
   const hour=tailClock(g).hour,dusk=Math.max(0,Math.min(1,(hour-17.5)/2));sun.intensity=2.5-1.5*dusk;sky.intensity=1.7-.5*dusk;return true;}
@@ -1838,7 +1871,7 @@ float pat(){vec2 u=tri();
  const zoomBar=document.createElement('div');zoomBar.className='tail-zoom';zoomBar.innerHTML='<button type="button" data-z="1" aria-label="zoom in">+</button><button type="button" data-z="-1" aria-label="zoom out">−</button>';zoomBar.style.cssText='position:absolute;right:12px;top:62px;z-index:3;display:flex;flex-direction:column;gap:6px';
  for(const b of zoomBar.querySelectorAll('button')){b.style.cssText='width:36px;height:36px;border-radius:18px;border:0;background:#fff6e2e6;color:#3a2a1a;font:700 20px/1 system-ui;box-shadow:0 2px 6px #0003;touch-action:manipulation';b.onclick=e=>{e.stopPropagation();setZoom(zoom+ +b.dataset.z);canvas.focus({preventScroll:true});};}
  canvas.parentElement.appendChild(zoomBar);
- function draw(g){art.prepare(g);if(!frame(g))return;sync(g);fadeTill(g);animate(g,performance.now()/1000);R.setRenderTarget(rt);R.render(scene,cam);R.setRenderTarget(null);R.setViewport(0,canvas.height-vpH,vpW,vpH);R.render(postScene,postCam);R.setViewport(0,0,canvas.width,canvas.height);art.draw(g);}
+ function draw(g){art.prepare(g);if(!frame(g))return;sync(g);fadeFront(g);animate(g,performance.now()/1000);R.setRenderTarget(rt);R.render(scene,cam);R.setRenderTarget(null);R.setViewport(0,canvas.height-vpH,vpW,vpH);R.render(postScene,postCam);R.setViewport(0,0,canvas.width,canvas.height);art.draw(g);}
  // Screen directions map onto the floor at 45 degrees; depth moves are shortened so walking looks even.
  function steer(x,y){return{x:(x+y)/Math.SQRT2,y:(y-x)/Math.SQRT2/DEPTH};}
  return{...art,draw,steer};}
@@ -1996,8 +2029,9 @@ gameModules.cafe=(()=>{
 
 
 const TAIL_COMBO_GAP=12;
-// The 3D café is a prototype behind ?view=iso; without WebGL it falls back to the 2D café.
-const scene3d=(cv,lang)=>{if(/[?&]view=iso(&|$)/.test(location.search))try{return tailIsoRenderer(cv,lang);}catch(e){console.warn('3D view unavailable',e);}return tailRenderer(cv,lang);};
+// The café is drawn in 3D pixel art. Only a browser without WebGL gets the old 2D drawing, which still
+// shows the earlier floor plan.
+const scene3d=(cv,lang)=>{try{return tailIsoRenderer(cv,lang);}catch(e){console.warn('3D view unavailable',e);}return tailRenderer(cv,lang);};
 // The daily café (everyone plays the same one-day café and compares receipts) needs other players to
 // compare with, so its title-screen entry is off for now. Links to #/cafe?daily=… still open it.
 const DAILY_ENTRY=false;
@@ -2186,10 +2220,10 @@ const words={welcome:t('欢迎开店。走到点单台，接待第一桌客人�
  // the next ghost table buys it; anything
  // else walks to the nearest station (locked ones are bought by standing there), the till, the
  // office or a table's serving spot.
- function dayTap(p,e){const hit=renderer.miniHit(e.clientX,e.clientY);if(hit){tailSend(g,hit.x,hit.y);return;}const cr=tailCraft(g);if(cr&&(e.pointerType!=='mouse'||Math.abs(p.x-cr.station.x)<150&&p.y<TAIL_BAR_Y-20)){boost();updateUI();return;}const zone=g.zones===1&&p.x>898&&p.y>TAIL_BAR_Y-12&&p.y<TAIL_BAR_Y+28?1:Math.floor(p.x/TAIL_ZONE_W);if(zone>=g.zones){if(zone===g.zones&&tailBuyZone(g)){persist();audio.play('upgrade');updateUI();}else shop(false,'grow');return;}
+ function dayTap(p,e){const hit=renderer.miniHit(e.clientX,e.clientY);if(hit){tailSend(g,hit.x,hit.y);return;}const cr=tailCraft(g);if(cr&&(e.pointerType!=='mouse'||Math.abs(p.x-cr.station.x)<150&&p.y<TAIL_BAR_Y-20)){boost();updateUI();return;}const zone=Math.floor(p.x/TAIL_ZONE_W);if(zone>=g.zones){if(zone===g.zones&&tailBuyZone(g)){persist();audio.play('upgrade');updateUI();}else shop(false,'grow');return;}
   const next=g.tables[g.tablesOpen],price=tailTablePrice(g);if(next&&price!==null&&Math.abs(p.x-next.x)<next.hw+12&&Math.abs(p.y-next.y)<next.hh+18){tailSend(g,next.x,next.y);return;}
   if(p.y<TAIL_WORLD.minY){const spots=[{...TAIL_SPOTS.stock},...g.stations.filter(s=>s.zone<g.zones).map(s=>({x:s.x,y:TAIL_BAR_Y,st:s})),...TAIL_DROPS.filter(d=>d.zone<g.zones)];const best=spots.reduce((a,b)=>Math.abs(b.x-p.x)<Math.abs(a.x-p.x)?b:a);p={x:best.x,y:TAIL_BAR_Y};}
-  else if(p.x>80&&p.x<255&&p.y>202&&p.y<338||Math.hypot(p.x-TAIL_SPOTS.till.x,p.y-TAIL_SPOTS.till.y)<50)p=TAIL_SPOTS.till;else if(p.x<174&&p.y>340)p=TAIL_SPOTS.shop;else{const table=g.tables.find(v=>v.open&&Math.abs(v.x-p.x)<v.hw+22&&Math.abs(v.y-p.y)<v.hh+34);if(table)p={x:table.ax,y:table.ay};}tailSend(g,p.x,p.y);}
+  else if(p.x>800&&p.x<930&&p.y>200&&p.y<296||Math.hypot(p.x-TAIL_SPOTS.till.x,p.y-TAIL_SPOTS.till.y)<50)p=TAIL_SPOTS.till;else if(tailInOffice(p))p=TAIL_SPOTS.shop;else{const table=g.tables.find(v=>v.open&&Math.abs(v.x-p.x)<v.hw+22&&Math.abs(v.y-p.y)<v.hh+34);if(table)p={x:table.ax,y:table.ay};}tailSend(g,p.x,p.y);}
  function active(){return running&&!paused&&!disposed;}
  function toggleIcon(id,on){const b=$(id,root);b.classList.toggle('off',!on);b.setAttribute('aria-pressed',on);}
  function joyEnd(){joyPointer=null;joyStart=null;joystick={x:0,y:0};$('#tail-stick',root).style.transform='';$('#tail-joystick',root).classList.remove('live');}
