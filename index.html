@@ -2135,8 +2135,11 @@ float pat(){vec2 u=tri();
   actors.done();}
  // ---- camera: follows the manager; the zoom is how many screen pixels one art pixel covers ----
  let zoom=0,picked=false,tx=null,tz=0,last=0,vpW=1,vpH=1,rt=null;const v3=new THREE.Vector3(),c0=new THREE.Vector3(),shift=new THREE.Vector2();
+ // A phone-sized screen (under 560 css px tall) shows about eleven floor units top to bottom, close enough to
+ // tap; a bigger screen zooms out until the whole hall, about 700 by 420 art pixels, fits in view.
+ const autoZoom=(w,h,cssH)=>cssH<560?Math.max(2,Math.round(h/(D*11))):Math.max(2,Math.floor(Math.min(w/700,h/420)));
  function frame(g){const w=canvas.width,h=canvas.height;if(!w||!h)return false;Object.assign(gl.style,{left:canvas.offsetLeft+'px',top:canvas.offsetTop+'px',width:canvas.offsetWidth+'px',height:canvas.offsetHeight+'px'});
-  const sz=R.getSize(new THREE.Vector2());if(sz.x!==w||sz.y!==h)R.setSize(w,h,false);if(!picked)zoom=Math.max(2,Math.round(h/(D*11)));const rw=Math.max(1,Math.floor(w/zoom)),rh=Math.max(1,Math.floor(h/zoom));vpW=rw*zoom;vpH=rh*zoom;
+  const sz=R.getSize(new THREE.Vector2());if(sz.x!==w||sz.y!==h)R.setSize(w,h,false);if(!picked)zoom=autoZoom(w,h,canvas.offsetHeight||h);const rw=Math.max(1,Math.floor(w/zoom)),rh=Math.max(1,Math.floor(h/zoom));vpW=rw*zoom;vpH=rh*zoom;
   // The small picture has one spare art pixel all round, so the finished picture can slide by part of a pixel.
   const bw=rw+2,bh=rh+2;if(!rt||rt.width!==bw||rt.height!==bh){rt?.dispose();rt=new THREE.WebGLRenderTarget(bw,bh,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthTexture:new THREE.DepthTexture(bw,bh)});rt.depthTexture.minFilter=rt.depthTexture.magFilter=THREE.NearestFilter;const u=post.material.uniforms;u.tCol.value=rt.texture;u.tDepth.value=rt.depthTexture;u.res.value.set(bw,bh);u.view.value.set(rw,rh);}
   Object.assign(cam,{left:-bw/D/2,right:bw/D/2,top:bh/D/2,bottom:-bh/D/2});cam.updateProjectionMatrix();
