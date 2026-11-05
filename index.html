@@ -520,6 +520,14 @@ html .tail-modal.tail-px #tail-p-music,html .tail-modal.tail-px #tail-p-sound,ht
 html .tail-modal.tail-px #tail-new{display:inline-block;padding:0;border:0;background:none;font-size:12px;text-decoration:underline;color:#6b5128}
 html .tail-modal.tail-px #tail-new.armed{color:#a3412c}
 .tail-lg-sign{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;font-style:normal}
+
+/* Pixel title: the hero and logo are pixel canvases, the start button is a pixel block like the pause card. */
+.tail-title-logo,.tail-title-hero{image-rendering:pixelated}
+.tail-title-hero{animation:none!important}
+html .tail-title-shade .tail-modal .tail-play{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:0;border:3px solid #3a2410;background:#ffcf3a;color:#3a2410;box-shadow:inset 0 -5px 0 #e59a1c,inset 0 4px 0 #fff0a0,0 5px 0 #3a2410;clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));animation:none;text-shadow:0 2px 0 #fff0a0;padding-bottom:5px}
+html .tail-title-shade .tail-modal .tail-play:hover{background:#ffd95a}
+html .tail-title-shade .tail-modal .tail-play:active{transform:translateY(4px);box-shadow:inset 0 -3px 0 #e59a1c,0 1px 0 #3a2410}
+html .tail-title-shade .tail-modal .tail-play .tail-ico{width:28px;height:28px;image-rendering:pixelated}
 </style></head><body><div id="app"></div><div id="toast" role="status" aria-live="polite"></div><script>window.ARCADE_STANDALONE="cafe";(()=>{
 function rng(seed=1){let a=(Number(seed)>>>0)||1;return()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
 function shuffle(a,r){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -2543,10 +2551,17 @@ const words={welcome:t('欢迎开店。走到点单台，接待第一桌客人�
  function begin(){audio.unlock();audio.setSfx(sound);audio.setMusic(music);running=true;resume();api.start();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);}
  function intro(){const continued=g.served>0||g.day>1;const el=modal(`<div class="tail-title"><canvas class="tail-title-logo" role="img" aria-label="Tail &amp; Thyme Café"></canvas><canvas class="tail-title-hero" aria-hidden="true"></canvas></div>${t('<p class="tail-title-sub">尾巴咖啡馆</p>','')}<button id="tail-start" class="btn primary wide tail-play">${tailIconHTML('play')} ${continued?t(`继续 · 第 ${g.day} 天`,`Continue · Day ${g.day}`):t('开始','Play')}</button>${continued&&DAILY_ENTRY?dailyButton():''}<p class="tail-small">${t('进度自动保存在这个浏览器','Progress saves in this browser')}</p>${api.portal?`<button class="tail-link tail-intro-lang" id="tail-intro-lang">${tailIconHTML('globe')} ${t('English','中文')}</button>`:''}`);el.classList.add('tail-title-shade');titleArt(el);$('#tail-start',el).onclick=()=>{el.remove();begin();morning();};$('#tail-intro-lang',el)?.addEventListener('click',api.portal?.switchLang);$('#tail-daily',el)?.addEventListener('click',goDaily);}
  // The title screen: the store covers' chunky outlined logo ("Tail &" in gold, "Thyme" in herb green,
- // CAFÉ on a brown tag) beside the manager carrying a latte and a croissant.
+ // CAFÉ on a brown tag) beside the manager carrying a latte and a croissant. Both are pixel art like the
+ // café: the logo is drawn small and scaled up by a whole number with smoothing off, and the manager is
+ // the same pixel figure that walks the floor, shifting between its two idle frames.
  function titleArt(el){const d=Math.min(2,window.devicePixelRatio||1),fit=cv=>{const r=cv.getBoundingClientRect();cv.width=Math.max(1,Math.round(r.width*d));cv.height=Math.max(1,Math.round(r.height*d));return cv.getContext('2d');};
-  const logo=$('.tail-title-logo',el);drawLogo(logo,fit(logo));document.fonts?.load('700 40px Fredoka').then(()=>{if(logo.isConnected)drawLogo(logo,logo.getContext('2d'));},()=>{});
-  const hero=$('.tail-title-hero',el),h=fit(hero),k=hero.height/150;h.setTransform(k,0,0,k,0,0);tailRenderer(hero,t('zh','en')).figure({x:hero.width/k/2+12,y:138},'binturong',[{type:'latte',state:'carried'},{type:'croissant',state:'carried'}],'manager',1.25);}
+  const logo=$('.tail-title-logo',el);pixelLogo(logo,fit(logo));document.fonts?.load('700 40px Fredoka').then(()=>{if(logo.isConnected)pixelLogo(logo,logo.getContext('2d'));},()=>{});
+  const hero=$('.tail-title-hero',el),h=fit(hero),P=TAIL_PIXEL,frames=['idle0','idle1'].map(frame=>P.drawCast('binturong',{role:'manager',frame,carry:['latte','croissant']}));let n=0;
+  const paint=()=>{if(!hero.isConnected)return clearInterval(timer);const k=Math.max(1,Math.floor(Math.min(hero.width/P.CAST_W,hero.height/(P.CAST_H+2)))),w=P.CAST_W*k,ht=P.CAST_H*k;h.setTransform(1,0,0,1,0,0);h.clearRect(0,0,hero.width,hero.height);h.imageSmoothingEnabled=false;h.translate(Math.round((hero.width+w)/2),Math.round(hero.height-ht-k));h.scale(-1,1);h.drawImage(frames[n++%2],0,0,w,ht);};
+  const timer=setInterval(paint,600);paint();}
+ function pixelLogo(logo,c){const k=Math.max(2,Math.round(logo.height/72)),off=document.createElement('canvas');off.width=Math.ceil(logo.width/k);off.height=Math.ceil(logo.height/k);const o=off.getContext('2d');drawLogo(off,o);
+  const img=o.getImageData(0,0,off.width,off.height),px=img.data;for(let i=3;i<px.length;i+=4)px[i]=px[i]>120?255:0;o.putImageData(img,0,0);
+  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,logo.width,logo.height);c.imageSmoothingEnabled=false;c.drawImage(off,0,0,off.width*k,off.height*k);}
  function drawLogo(logo,c){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,logo.width,logo.height);const W=logo.width,H=logo.height,F='Fredoka,"Arial Rounded MT Bold",Arial,sans-serif',rows=[['Tail &',['#ffe873','#ffb627','#f07a12']],['Thyme',['#c8f27a','#6cc83f','#2f8a2a']]];
   c.font=`700 100px ${F}`;const size=Math.min(H*.34,100*W*.84/c.measureText('Thyme').width),lead=size*1.04;c.save();c.translate(W/2,H*.42);c.rotate(-.05);c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';let py=-lead/2-size*.12;
   for(const [text,[top,mid,low]]of rows){c.font=`700 ${size}px ${F}`;c.fillStyle='#4a230e';c.fillText(text,0,py+size*.09);c.lineWidth=size*.24;c.strokeStyle='#4a230e';c.strokeText(text,0,py);c.lineWidth=size*.1;c.strokeStyle='#fffaf0';c.strokeText(text,0,py);const f=c.createLinearGradient(0,py-size*.42,0,py+size*.42);f.addColorStop(0,top);f.addColorStop(.5,mid);f.addColorStop(1,low);c.fillStyle=f;c.fillText(text,0,py);py+=lead;}
