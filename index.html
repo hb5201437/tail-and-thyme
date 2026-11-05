@@ -449,6 +449,77 @@ img.tail-coin{width:1.3em;height:1.3em;vertical-align:-.3em}
 .tail-context .tail-ico,.tail-event .tail-ico,.tail-urgent button .tail-ico{width:40px;height:40px}
 @media(max-height:560px){.tail-context .tail-ico,.tail-event .tail-ico,.tail-urgent button .tail-ico{width:32px;height:32px}}
 @media(max-height:300px){.tail-context .tail-ico,.tail-event .tail-ico,.tail-urgent button .tail-ico{width:24px;height:24px}.tail-goal-hit .tail-ico{width:32px;height:32px}}
+/* Counters and clock without their pills: just icons and numbers, white with a dark rim so they read on any floor. */
+html.portal .tail-counters>div,html.portal .tail-clock,html .tail-counters>div.empty{background:none!important;border:0!important;box-shadow:none!important;padding:0 6px 0 0}
+html.portal .tail-counters strong,html.portal .tail-clock strong,html .tail-counters>div.empty strong{color:#fff!important;text-shadow:0 0 2px #3a2410,1px 1px 0 #3a2410,-1px 1px 0 #3a2410,1px -1px 0 #3a2410,-1px -1px 0 #3a2410,0 2px 0 #3a2410,0 2px 4px #0006}
+html.portal .tail-counters strong.debt{color:#ffb39e!important}
+html.portal .tail-counters span i,html.portal .tail-clock>:not(strong){filter:drop-shadow(0 1px 0 #3a2410) drop-shadow(0 0 1px #3a2410) drop-shadow(0 2px 3px #0005)}
+html .tail-counters>div.empty strong{color:#ff9a80!important}
+@keyframes tail-pill-pop{0%{transform:scale(1)}35%{transform:scale(1.2)}100%{transform:scale(1)}}
+html .tail-counters>div.empty{animation:tail-bean-low .9s ease-in-out infinite alternate}
+@keyframes tail-bean-low{to{transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){html .tail-counters>div.empty{animation:none}}
+/* ---- Pixel cards: the pause card and the sign legend, drawn like the game's own pixel art ---- */
+html .tail-modal.tail-px{--ink:#3a2410;--paper:#fbefd3;--edge:#e2c991;position:relative;width:min(560px,100%);padding:16px 20px 14px;background:var(--paper);border:3px solid var(--ink);border-radius:0;box-shadow:inset 0 0 0 3px #fff8e6;clip-path:polygon(0 6px,3px 6px,3px 3px,6px 3px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px));image-rendering:pixelated}
+.tail-px .tail-ico{image-rendering:pixelated}
+html .tail-px h2.tail-px-title{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;font:600 24px/1.1 Fredoka,'Arial Rounded MT Bold',system-ui,sans-serif;color:#fff;letter-spacing:.5px;text-shadow:2px 0 var(--ink),-2px 0 var(--ink),0 2px var(--ink),0 -2px var(--ink),2px 2px var(--ink),-2px 2px var(--ink),2px -2px var(--ink),-2px -2px var(--ink),0 4px var(--ink)}
+html .tail-px h2.tail-px-title .tail-ico{width:30px;height:30px;filter:drop-shadow(2px 2px 0 #3a241055)}
+.tail-px-row{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.tail-px-row>*{flex:1 1 0}
+html .tail-px .tail-px-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin:0;padding:6px 12px;background:#fff6dc;color:var(--ink);border:3px solid var(--ink);border-radius:0;box-shadow:inset 0 -4px 0 #e5cf9e,inset 0 3px 0 #fff,0 4px 0 var(--ink);font:600 16px/1.1 Fredoka,'Arial Rounded MT Bold',system-ui,sans-serif;cursor:pointer;clip-path:polygon(0 3px,3px 3px,3px 0,calc(100% - 3px) 0,calc(100% - 3px) 3px,100% 3px,100% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,3px calc(100% - 3px),0 calc(100% - 3px));margin-bottom:4px}
+html .tail-px .tail-px-btn .tail-ico{width:24px;height:24px}
+html .tail-px .tail-px-btn.go{background:#5f9a62;color:#fff;box-shadow:inset 0 -4px 0 #3f7448,inset 0 3px 0 #8cc58a,0 4px 0 var(--ink);text-shadow:0 2px 0 #2a4f30;font-size:19px;min-height:52px}
+html .tail-px .tail-px-btn:active,html .tail-px .tail-px-tog:active{transform:translateY(3px);box-shadow:inset 0 -2px 0 #0002,0 1px 0 var(--ink)}
+html .tail-px .tail-px-btn:focus-visible,html .tail-px .tail-px-tog:focus-visible{outline:3px dashed #e0a43a;outline-offset:2px}
+.tail-px-tools{justify-content:center}
+.tail-px-tools>*{flex:0 0 auto}
+html .tail-px .tail-px-tog{display:flex;align-items:center;justify-content:center;gap:2px;width:52px;height:46px;padding:0;background:#fff6dc;color:var(--ink);border:3px solid var(--ink);border-radius:0;box-shadow:inset 0 -4px 0 #e5cf9e,0 4px 0 var(--ink);cursor:pointer;margin-bottom:4px}
+html .tail-px .tail-px-tog .tail-ico{width:26px;height:26px}
+html .tail-px .tail-px-tog b{font:700 11px/1 Fredoka,system-ui,sans-serif}
+html .tail-px .tail-px-tog.off{background:#d8cdb4;box-shadow:inset 0 -4px 0 #bfb296,0 4px 0 var(--ink)}
+html .tail-px .tail-px-tog.off .tail-ico{opacity:.45;filter:grayscale(1)}
+html .tail-px .tail-px-tog.off::after{content:'';position:absolute;width:30px;height:3px;background:#c0412a;transform:rotate(-45deg)}
+html .tail-px .tail-px-tog{position:relative}
+html .tail-px>.tail-link{display:inline-block;margin:10px 10px 0;font-size:12px;color:#6b5128}
+html .tail-px>.tail-link.danger{color:#a3412c}
+/* The legend of signs */
+.tail-px-guide{width:min(760px,100%)!important}
+.tail-legend{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;text-align:left}
+.tail-legend section{padding:8px 10px;background:#fff8e6;border:2px solid #e2c991}
+.tail-legend h3{margin:0 0 6px;font:600 14px/1.2 Fredoka,system-ui,sans-serif;color:#7a5a2a;letter-spacing:.5px}
+.tail-legend ul{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.tail-legend li{display:grid;grid-template-columns:86px 1fr;align-items:center;gap:8px;font-size:12.5px;line-height:1.35;color:var(--ink)}
+.tail-legend li>:first-child{justify-self:center}
+.tail-legend li>span{min-width:0}
+.tail-legend li .tail-ico{width:20px;height:20px;vertical-align:middle;margin:0}
+.tail-lg-tag{display:inline-flex;align-items:center;gap:2px;padding:3px 8px;border-radius:999px;background:#1d3b2f;border:2px solid #9edc7c;color:#f6e6b8;font:700 12px/1 Fredoka,system-ui,sans-serif;font-style:normal}
+.tail-lg-tag.deliver{border-color:#f2cf6a}.tail-lg-tag.jam{border-color:#e0644a}.tail-lg-tag.plain{border-color:#1d3b2f}.tail-lg-tag.warn{background:#8a3b2c;border-color:#8a3b2c;color:#fff3e0}.tail-lg-tag.gold{background:#f2cf6a;border-color:#c99a2e;color:#3a2a1a}
+.tail-lg-bub{position:relative;display:inline-flex;align-items:center;gap:2px;margin:0 1px;padding:3px 7px 6px;border-radius:9px;background:#fffae9;border:2px solid #cbbd9a;font:700 12px/1 Fredoka,system-ui,sans-serif;font-style:normal;color:#54744c}
+.tail-lg-bub.angry{background:#ffe3ce;border-color:#d98e63}
+.tail-lg-bub em{position:absolute;left:6px;right:14px;bottom:2px;height:3px;border-radius:2px;background:linear-gradient(90deg,#7fa65a 0 40%,#e2a93a 40% 70%,#c75a3a 70%)}
+.tail-lg-ring{display:inline-flex;margin:0 -1px;padding:2px;border-radius:50%;background:#fff1c2;border:2px solid #d9a640}
+.tail-legend li .tail-lg-ring .tail-ico{width:16px;height:16px}
+.tail-lg-rare{display:inline-flex;padding:3px 8px;border-radius:9px;background:#4a1f45;border:2px solid #ff8fd0}
+.tail-lg-you .tail-ico,.tail-lg-edge .tail-ico{width:26px!important;height:26px!important}
+.tail-lg-edge{display:inline-flex;padding:4px 10px;border-radius:999px;background:#1d3b2f;border:2px solid #9edc7c}
+.tail-lg-edge .tail-ico{transform:rotate(-90deg)}
+.tail-lg-work{position:relative;display:inline-flex;justify-content:center;width:40px;padding:3px 0 9px;border-radius:7px;background:#1d3b2f;border:1.5px solid #d9c27d}
+.tail-lg-work em{position:absolute;left:6px;right:6px;bottom:3px;height:4px;border-radius:2px;background:linear-gradient(90deg,#9fc3e6 60%,#ffffff30 60%)}
+.tail-lg-bar{display:inline-block;width:52px;height:10px;border-radius:5px;background:#1d3b2f;padding:2px}
+.tail-lg-bar em{display:block;width:62%;height:100%;border-radius:3px;background:#f8d571}
+.tail-lg-ghost{display:inline-flex;align-items:center;gap:2px;padding:4px 8px;border:2px dashed #3a2a1a99;border-radius:4px;font:700 12px/1 Fredoka,system-ui,sans-serif;font-style:normal}
+.tail-lg-jobs{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:4px}
+.tail-lg-jobs span{display:inline-flex;align-items:center;gap:2px}
+.tail-lg-jobs small{font-size:11px;color:#5a4320}
+.tail-px-foot{position:sticky;bottom:-14px;margin:10px -20px -14px;padding:8px 20px 10px;background:var(--paper);border-top:2px solid #e2c991}
+@media(max-width:640px){.tail-legend{grid-template-columns:1fr}}
+@media(max-height:560px){html .tail-modal.tail-px{padding:10px 16px 10px}html .tail-px h2.tail-px-title{font-size:20px;margin-bottom:8px}html .tail-px .tail-px-btn{min-height:40px;font-size:15px}html .tail-px .tail-px-btn.go{min-height:44px;font-size:17px}html .tail-px .tail-px-tog{height:40px;width:48px}.tail-px-row{margin-top:7px}.tail-px-foot{bottom:-10px;margin:8px -16px -10px;padding:6px 16px 8px}}
+html .tail-modal.tail-px #tail-resume,html .tail-modal.tail-px #tail-book,html .tail-modal.tail-px #tail-howto,html .tail-modal.tail-px #tail-back{display:flex;width:100%;margin:0 0 4px;font-size:16px;text-decoration:none}
+html .tail-modal.tail-px #tail-resume{font-size:19px}
+html .tail-modal.tail-px #tail-p-music,html .tail-modal.tail-px #tail-p-sound,html .tail-modal.tail-px #tail-lang,html .tail-modal.tail-px #tail-home{display:flex;padding:0;border:3px solid var(--ink);border-radius:0;font-size:inherit;text-decoration:none}
+html .tail-modal.tail-px #tail-new{display:inline-block;padding:0;border:0;background:none;font-size:12px;text-decoration:underline;color:#6b5128}
+html .tail-modal.tail-px #tail-new.armed{color:#a3412c}
+.tail-lg-sign{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;font-style:normal}
 </style></head><body><div id="app"></div><div id="toast" role="status" aria-live="polite"></div><script>window.ARCADE_STANDALONE="cafe";(()=>{
 function rng(seed=1){let a=(Number(seed)>>>0)||1;return()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
 function shuffle(a,r){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -1514,11 +1585,11 @@ function tailRenderer(canvas,lang='zh',iso=null){
  // In the 3D view, flat() lays what follows on the floor and stand(x,y) stands it upright at that floor spot,
  // keeping its offsets in world pixels. Without iso both leave the canvas as it is.
  const flat=()=>{if(iso)c.setTransform(...iso.ground());},stand=(x,y)=>{if(!iso)return;const p=iso.at(x,y),s=iso.s();c.setTransform(s,0,0,s,p.x-s*x,p.y-s*y);},onScreen=(x,y)=>iso?iso.seen(x,y,-140):x>=camera-140&&x<=camera+W+140;
- function marker(x,y,icon,active=false){c.save();if(!active)c.globalAlpha=.8;stand(x,y);badge(icon,x,y+33,active);c.restore();}
+ function marker(x,y,icon,active=false){c.save();if(!active)c.globalAlpha=.8;stand(x,y);badge(icon,x,y+24,active,.7);c.restore();}
  const coarse=()=>!!globalThis.matchMedia?.('(pointer:coarse)').matches;
  // Scene icons scale up when the canvas is drawn small, so they never shrink below about 12 css px.
  const grow=()=>Math.max(1,Math.min(1.8,.68/(scale/dpr||1)));
- function badge(icon,x,y,active=false){const k=grow(),r=19*k;ellipse(x,y,r,r,active?'#f2cf6a':'#fff5e0e0');stroke(active?'#6b5128':'#8c714b99',1.6);if(!ico(icon,x,y,30*k))text(icon,x,y+1,17*k,'#6b5128','center',700);}
+ function badge(icon,x,y,active=false,size=1){const k=grow()*size,r=19*k;ellipse(x,y,r,r,active?'#f2cf6a':'#fff5e0e0');stroke(active?'#6b5128':'#8c714b99',1.6);if(!ico(icon,x,y,30*k))text(icon,x,y+1,17*k,'#6b5128','center',700);}
  function spill(s,g){c.save();flat();ellipse(s.x,s.y,34,14,'#7a4a2a55');ellipse(s.x-6,s.y-2,22,9,'#8a5a3266');ellipse(s.x-12,s.y-4,6,2.5,'#fff2d888');c.restore();stand(s.x,s.y);const sy=s.y-30;ico('warn',s.x+36,sy+10-(Math.floor(g.time*2)%2)*3,24*grow());}
  // A data-fit canvas (portal build) is sized by CSS; the renderer only follows its shape. A tall
  // portrait canvas shows a narrower slice of the café (480 to 600 wide) so a phone gets a bigger picture.
@@ -1548,8 +1619,9 @@ function tailRenderer(canvas,lang='zh',iso=null){
   minimap(g,span,goals);edges(goals);for(const t of g.tables)if(t.open)popScale('t'+t.id,g,true);for(const st of g.stations)popScale('s'+st.id,g,st.open);popReady=true;}
  // Floor spots, table markers, the walking path and the inspector's ring.
  function floorMarks(g,seen){
-  for(const [key,p]of Object.entries(TAIL_SPOTS)){if(key==='door'||key==='shop'&&wide||!seen(p))continue;if(key==='herb'&&!g.upgrades.herb||key==='kitchen'&&!g.upgrades.kitchen||key==='pickup'&&!g.groups.some(v=>v.special==='courier'))continue;marker(p.x,p.y,icons[key],near(p,g.player,TAIL_REACH[{stock:'stock',sink:'drop',till:'till',pickup:'pickup'}[key]??'station']));}
-  for(const st of g.stations)if(st.zone>0&&st.open&&seen(st))marker(st.x,st.y,kindIcons[st.kind]??'sparkle',near(st,g.player,TAIL_REACH.station));for(const d of TAIL_DROPS)if(d.zone>0&&d.zone<g.zones&&seen(d))marker(d.x,d.y,icons.sink,near(d,g.player,TAIL_REACH.drop));
+  // Machines, shelves and the till are plain to see in the room, so they carry no badge; the next-job tag
+  // points at whichever one is needed. Only the courier's pickup spot, which is just a patch of floor, gets one.
+  {const p=TAIL_SPOTS.pickup;if(seen(p)&&g.groups.some(v=>v.special==='courier'))marker(p.x,p.y,icons.pickup,near(p,g.player,TAIL_REACH.pickup));}
   const mine=new Set(g.player.bag.map(v=>v.group).filter(Boolean));for(const t of g.tables){if(!t.open||!seen(t))continue;const gr=g.groups.find(v=>v.id===t.group),carry=gr&&mine.has(gr);if(carry||t.state==='dirty'||t.coins){marker(t.ax,t.ay,carry?'down':t.state==='dirty'?'sponge':'coin',carry||tailTableGap(t,g.player)<TAIL_REACH.table);}}
   if(g.player.path.length){c.save();flat();c.setLineDash([2,9]);line([[g.player.x,g.player.y],...g.player.path.map(v=>[v.x,v.y])],'#6b896a88',3);c.restore();}
   if(g.inspector&&!g.inspector.done&&seen(g.inspector)){const ins=g.inspector,inside=Math.hypot(g.player.x-ins.x,g.player.y-ins.y)<180;if(!inside){stand(ins.x,ins.y);ico('down',ins.x,ins.y-118+Math.sin(g.time*4)*4,26*grow());}}}
@@ -1998,15 +2070,16 @@ float pat(){vec2 u=tri();
   s={x:ax,y:ay,w:cv.width,h:cv.height,ox:art.ax,oy:art.ay};actx.drawImage(cv,ax,ay);ax+=cv.width+1;rowH=Math.max(rowH,cv.height);atlasTex.needsUpdate=true;sprites.set(key,s);return s;}
  // Each sprite writes the depth of the point it stands on, so it sorts as a whole against walls, counters and
  // other sprites, the way a 2D sprite does.
- const spriteMat=new THREE.MeshBasicMaterial({map:atlasTex,alphaTest:.5,side:THREE.DoubleSide});spriteMat.onBeforeCompile=s=>{s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nattribute vec3 aFoot;varying float vFoot;').replace('#include <project_vertex>','#include <project_vertex>\n{vec4 f=projectionMatrix*viewMatrix*vec4(aFoot,1.);vFoot=f.z/f.w*.5+.5;}');s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nvarying float vFoot;').replace('#include <opaque_fragment>','#include <opaque_fragment>\ngl_FragDepth=vFoot;');};
+ const toCamV=new THREE.Vector3(Math.sin(YAW)*Math.cos(PITCH),Math.sin(PITCH),Math.cos(YAW)*Math.cos(PITCH));
+ const spriteMat=new THREE.MeshBasicMaterial({map:atlasTex,alphaTest:.5,side:THREE.DoubleSide});spriteMat.onBeforeCompile=s=>{s.uniforms.toCam={value:toCamV};s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aFoot;varying float vFoot;varying vec3 vW;varying float vH;').replace('#include <project_vertex>','#include <project_vertex>\n{vec4 f=projectionMatrix*viewMatrix*vec4(aFoot.xyz,1.);vFoot=f.z/f.w*.5+.5;vW=(modelMatrix*vec4(position,1.)).xyz;vH=aFoot.w;}');s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nuniform vec3 toCam;uniform mat4 projectionMatrix;varying float vFoot;varying vec3 vW;varying float vH;').replace('#include <opaque_fragment>','#include <opaque_fragment>\n{vec3 G=vW+toCam*((vH-vW.y)/toCam.y+.03);vec4 q=projectionMatrix*viewMatrix*vec4(G,1.);gl_FragDepth=min(vFoot,q.z/q.w*.5+.5);}');};
  const right=new THREE.Vector3(Math.SQRT1_2,0,-Math.SQRT1_2),upAxis=new THREE.Vector3(),toCam=new THREE.Vector3(Math.sin(YAW)*Math.cos(PITCH),Math.sin(PITCH),Math.cos(YAW)*Math.cos(PITCH)),UP=1/Math.cos(PITCH);
  upAxis.crossVectors(toCam,right).normalize();
  // Puts a point on the camera's pixel lattice, so sprites and the camera always agree on whole pixels.
  const snap=p=>{const a=p.dot(right),b=p.dot(upAxis);return p.addScaledVector(right,Math.round(a*D)/D-a).addScaledVector(upAxis,Math.round(b*D)/D-b);};
- function batch(cap){const pos=new Float32Array(cap*12),uv=new Float32Array(cap*8),foot=new Float32Array(cap*12),idx=[];for(let i=0;i<cap;i++){const b=i*4;idx.push(b,b+1,b+2,b,b+2,b+3);}
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.setAttribute('aFoot',new THREE.BufferAttribute(foot,3));g.setIndex(idx);const m=new THREE.Mesh(g,spriteMat);m.frustumCulled=false;scene.add(m);let n=0;const v=new THREE.Vector3(),f=new THREE.Vector3();
+ function batch(cap){const pos=new Float32Array(cap*12),uv=new Float32Array(cap*8),foot=new Float32Array(cap*16),idx=[];for(let i=0;i<cap;i++){const b=i*4;idx.push(b,b+1,b+2,b,b+2,b+3);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.setAttribute('aFoot',new THREE.BufferAttribute(foot,4));g.setIndex(idx);const m=new THREE.Mesh(g,spriteMat);m.frustumCulled=false;scene.add(m);let n=0;const v=new THREE.Vector3(),f=new THREE.Vector3();
   return{clear(){n=0;},add(s,x,y,h=0,{flip=false,near=0}={}){if(n>=cap)return;const base=snap(v.set(X(x),h,Z(y)));f.copy(base).addScaledVector(toCam,.04+near);const corners=[[0,0],[s.w,0],[s.w,s.h],[0,s.h]];
-    corners.forEach(([cx,cy],k)=>{const px=(cx-s.ox)/D,py=(s.oy-cy)/D*UP,i=n*4+k;pos[i*3]=base.x+right.x*px;pos[i*3+1]=base.y+py;pos[i*3+2]=base.z+right.z*px;foot[i*3]=f.x;foot[i*3+1]=f.y;foot[i*3+2]=f.z;const u=(s.x+((flip?s.w-cx:cx)))/ATLAS,w=1-(s.y+cy)/ATLAS;uv[i*2]=u;uv[i*2+1]=w;});n++;},
+    corners.forEach(([cx,cy],k)=>{const px=(cx-s.ox)/D,py=(s.oy-cy)/D*UP,i=n*4+k;pos[i*3]=base.x+right.x*px;pos[i*3+1]=base.y+py;pos[i*3+2]=base.z+right.z*px;foot[i*4]=f.x;foot[i*4+1]=f.y;foot[i*4+2]=f.z;foot[i*4+3]=base.y;const u=(s.x+((flip?s.w-cx:cx)))/ATLAS,w=1-(s.y+cy)/ATLAS;uv[i*2]=u;uv[i*2+1]=w;});n++;},
    done(){g.setDrawRange(0,n*6);for(const k of['position','uv','aFoot'])g.attributes[k].needsUpdate=true;}};}
  const props=batch(600),actors=batch(400);
  // ---- keeping the scene in step with the café ----
@@ -2470,11 +2543,40 @@ const words={welcome:t('欢迎开店。走到点单台，接待第一桌客人�
   const tag=size*.36,tw=tag*4.4,th=tag*1.5,ty=py-lead/2+size*.38;c.fillStyle='#4a230e';c.beginPath();c.roundRect(-tw/2-tag*.12,ty-th/2,tw+tag*.24,th+tag*.24,th);c.fill();c.fillStyle='#8a4a1e';c.beginPath();c.roundRect(-tw/2,ty-th/2,tw,th,th/2);c.fill();c.font=`700 ${tag}px ${F}`;c.letterSpacing=`${tag*.25}px`;c.fillStyle='#fffaf0';c.fillText('CAFÉ',tag*.12,ty+tag*.04);c.restore();}
  // The guide shows one order as icons, then a note for each rule this café has actually met,
  // so day 1 reads five icons and a line, and the notes grow as the café does.
- const eventNote={spill:t('洒了的饮料要拖干净','Mop up spills'),jam:t('咖啡机卡住只有店长能修','Only you can fix a jammed machine'),critic:t('评论家的拿铁要店长开做，送得快得星','Start a critic’s latte yourself and serve it fast'),courier:t('外卖骑手在门口等','Couriers wait by the door'),vip:t('VIP 只让店长或二级跑堂送','VIPs take food from you or a level-2 runner'),inspect:t('检查时别留洒的饮料和脏桌','No spills or dirty tables at inspection')};
- function guideBody(){const flow=[['cashier',t('入座','Seat')],['barista',t('制作','Make')],['runner',t('送餐','Serve')],['busser',t('收桌','Clear')],...(tailFree(g)?[]:[['sink',t('洗盘','Wash')]])].map(([i,n])=>`<span>${tailIconHTML(i)}<small>${n}</small></span>`).join(tailIconHTML('right'));
-  const seen=new Set(g.log.flatMap(v=>v.events??[])),notes=[t('整桌上齐才开吃','A table eats once all of it arrives'),g.staff.length?t('伙伴会自己找活','Teammates find work on their own'):'',g.day>1?t(`打烊按 ${COIN} 营业额 · ${tailIconHTML('hourglass')} 离开 · ${tailIconHTML('barista')} 品质 评星`,`Stars at closing: ${COIN} takings · ${tailIconHTML('hourglass')} walk-outs · ${tailIconHTML('barista')} quality`):'',g.day>TAIL_FREE_DAYS?t('每天早上回答一个小问题','A small question each morning'):'',...Object.keys(eventNote).filter(k=>seen.has(k)).map(k=>eventNote[k])].filter(Boolean);
-  return `<div class="tail-flow">${flow}</div><ul class="tail-notes">${notes.map(n=>`<li>${n}</li>`).join('')}</ul>`;}
- function pause(help=false){if(!running||paused)return;paused=true;stopInput();persist();const el=modal(`<h2>${t(help?'店长的小手册':'暂停',help?'The shopkeeper’s guide':'Paused')}</h2>${help?guideBody():''}<button class="btn primary wide" id="tail-resume">${t('继续营业','Back to the café')}</button><button class="btn wide tail-book-btn" id="tail-book">${t(`稀有客人图鉴 ${rareCount()}/10`,`Rare guest book ${rareCount()}/10`)}</button>${help?'':`<button class="tail-link" id="tail-howto">${t('玩法说明','How to play')}</button>`}${api.portal?`<div class="tail-portal-row"><button class="tail-link" id="tail-p-music">${t(music?'音乐：开':'音乐：关',music?'Music: on':'Music: off')}</button><button class="tail-link" id="tail-p-sound">${t(sound?'音效：开':'音效：关',sound?'Sound: on':'Sound: off')}</button><button class="tail-link" id="tail-lang">${t('English','中文')}</button>${api.portal.branch?`<button class="tail-link" id="tail-home">${t('回到我的小店','Back to my café')}</button>`:''}<button class="tail-link" id="tail-new">${t('新开分店','New café')}</button></div><div class="tail-portal-row">`:''}${dailyInfo?`<button class="tail-link" id="tail-home-daily">${t('回到我的小店','Back to my café')}</button>`:`<button class="tail-link danger" id="tail-restart">${t('重新开始这家店','Restart this café')}</button>`}${api.portal?'</div>':''}`);$('#tail-howto',el)?.addEventListener('click',()=>{el.remove();paused=false;pause(true);});$('#tail-home-daily',el)?.addEventListener('click',goHome);$('#tail-go-daily',el)?.addEventListener('click',goDaily);$('#tail-resume',el).onclick=()=>{el.remove();resume();};$('#tail-book',el).onclick=()=>{el.remove();guestBook();};const rs=$('#tail-restart',el);if(rs)rs.onclick=()=>{if(!rs.classList.contains('armed')){rs.classList.add('armed');rs.textContent=t(`再点一次确认：清掉这家店的游戏币、设备、员工和营业记录，从第 1 天开始（现在是第 ${g.day} 天）`,`Click again to confirm: this café’s coins, equipment, staff and play log are wiped and day 1 begins (now day ${g.day})`);audio.play('tap');return;}restart();};if(api.portal){$('#tail-p-music',el).onclick=e=>{$('#tail-music',root).click();e.currentTarget.textContent=t(music?'音乐：开':'音乐：关',music?'Music: on':'Music: off');};$('#tail-p-sound',el).onclick=e=>{$('#tail-sound',root).click();e.currentTarget.textContent=t(sound?'音效：开':'音效：关',sound?'Sound: on':'Sound: off');};$('#tail-lang',el).onclick=api.portal.switchLang;const nw=$('#tail-new',el);nw.onclick=()=>{if(!nw.classList.contains('armed')){nw.classList.add('armed');nw.textContent=t('再点一次：去新开一家分店（这家店的进度会保留）','Click again to open a new café (this one stays saved)');audio.play('tap');return;}api.newSeed();};$('#tail-home',el)?.addEventListener('click',api.portal.myCafe);}}
+ // The how-to page is a legend of the signs over the room, each drawn the way the game draws it.
+ function guideBody(){const I=n=>tailIconHTML(n),tag=(icons,kind='job',num='')=>`<i class="tail-lg-tag ${kind}">${[].concat(icons).map(I).join('')}${num?`<b>${num}</b>`:''}</i>`,bub=(inner,kind='')=>`<i class="tail-lg-bub ${kind}">${inner}</i>`,row=(sign,text)=>`<li><i class="tail-lg-sign">${sign}</i><span>${text}</span></li>`,sec=(title,rows)=>`<section><h3>${title}</h3><ul>${rows.join('')}</ul></section>`;
+  const jobs=[['hand',t('取做好的餐','pick up'),],['barista',t('做咖啡','make coffee')],['herb',t('泡花草茶','brew tea')],['kitchen',t('做点心','bake & cook')],['fire',t('开烤炉','light oven')],['stock',t('搬咖啡豆','get beans')],['sink',t('送去洗碗','wash up')],['sponge',t('擦桌子','clear table')],['coin',t('收钱','collect')],['cashier',t('带客入座','seat guests')],['mop',t('拖地','mop')],['owl',t('见检查员','meet inspector')],['crown',t('贵宾优先','VIP first')],['hire',t('去办公室招人','hire help')]].map(([i,n])=>`<span>${I(i)}<small>${n}</small></span>`).join('');
+  return `<div class="tail-legend">${sec(t('该去哪','Where to go'),[
+   row(`<i class="tail-lg-you">${I('down')}</i>`,t('头顶跳动的黄箭头是你自己','The bouncing yellow arrow is you')),
+   row(tag('hand'),t('绿边牌子：下一步去这里。图案是要做的事：','Green tag: go here next. The picture is the job:')+`<span class="tail-lg-jobs">${jobs}</span>`),
+   row(tag('plate','deliver','03'),t('金边牌子＋地上金色虚线：把手里的东西送到这一桌，数字是桌号','Gold tag and gold dashes: take what you carry to this table number')),
+   row(tag('wrench','jam'),t('红边扳手：机器卡住了，走过去修','Red wrench: a machine jammed, walk over to fix it')),
+   row(`<i class="tail-lg-edge">${I('down')}</i>`,t('目标在画面外时，箭头贴在屏幕边上，点它就走过去','A target off screen gets an arrow at the edge; tap it to walk there'))]
+  )}${sec(t('客人头上','Over guests'),[
+   row(bub(I('dots')),t('排队等入座','waiting in line')),
+   row(bub(`${I('people')}<b>3</b>`),t('这一组有几位','how many in the group')),
+   row(bub(`${I('glass')}${I('cupcake')}<em></em>`),t('点了还没上的东西；下面的条是耐心，绿→黄→红','what is still to come; the bar is patience, green to red')),
+   row(bub(I('heart')),t('正在吃喝','eating and drinking')),
+   row(`${bub(I('smile'))}${bub(I('angry'),'angry')}`,t('满意离开／生气走掉','left happy / walked out')),
+   row(`<i class="tail-lg-ring">${I('pen')}</i><i class="tail-lg-ring">${I('scooter')}</i><i class="tail-lg-ring">${I('cake')}</i><i class="tail-lg-ring">${I('crown')}</i>`,t('评论家、外卖骑手、生日派对、贵宾；金边泡泡也是他们','critic, courier, party, VIP; gold bubbles are theirs too')),
+   row(`<i class="tail-lg-rare">${I('sparkle')}</i>`,t('稀有客人，服务好会记进图鉴','a rare guest for the guest book'))]
+  )}${sec(t('柜台和机器','Counter and machines'),[
+   row(tag(['hand'],'job','05'),t('做好了没人拿，数字是桌号；变金色在跳＝放太久了','ready and waiting, by table number; gold and bouncing means it has waited too long')),
+   row(`<i class="tail-lg-work">${I('milk')}<em></em></i>`,t('机器上方的小牌子：正在做哪一步，条走满就做好','over a machine: the step being made, done when the bar fills')),
+   row(`<i class="tail-lg-bar"><em></em></i>`,t('头顶的进度条：你或收银台正在忙','a bar over a head: you or the till at work')),
+   row(tag(['sponge','table'],'warn'),t('收银台红牌：没有干净桌子，先去擦','red sign at the till: no clean table, clear one')),
+   row(tag(['table','hourglass'],'warn'),t('收银台红牌：没有坐得下的空桌，等一等','red sign at the till: no free table fits yet')),
+   row(tag('sponge','plain'),t('这张桌子要擦','this table needs clearing'))]
+  )}${sec(t('其他','Other'),[
+   row(tag('hire','gold'),t('办公室亮金牌：钱够招第一个伙伴了','gold sign at the office: you can afford a first teammate')),
+   row(`${tag('sleep','plain')}<i class="tail-lg-ico">${I('drop')}</i>`,t('伙伴在休息／伙伴累了','teammate resting / teammate tired')),
+   row(`<i class="tail-lg-ico">${I('warn')}</i>`,t('地上洒了，要拖干净','a spill to mop')),
+   row(tag(['hourglass'],'plain','20'),t('检查员头上：还要待几秒','over the inspector: seconds left')),
+   row(`<i class="tail-lg-ghost">${I('coin')}<b>80</b></i>`,t('虚线桌子＋价格：站上去就买下','dashed table and price: stand on it to buy'))]
+  )}</div>`;}
+ function pause(help=false){if(!running||paused)return;paused=true;stopInput();persist();const I=n=>tailIconHTML(n),B=(id,icon,label,cls='')=>`<button class="tail-px-btn ${cls}" id="${id}">${I(icon)}<span>${label}</span></button>`,T=(id,icon,on,label)=>`<button class="tail-px-tog${on?'':' off'}" id="${id}" aria-label="${label}" aria-pressed="${on}">${I(icon)}</button>`;
+  const el=modal(help?`<h2 class="tail-px-title">${I('chat')}${t('看懂提示','What the signs mean')}</h2>${guideBody()}<div class="tail-px-row tail-px-foot">${B('tail-back','pause',t('返回','Back'))}${B('tail-resume','play',t('继续营业','Back to the café'),'go')}</div>`
+   :`<h2 class="tail-px-title">${I('pause')}${t('暂停','Paused')}</h2>${B('tail-resume','play',t('继续营业','Back to the café'),'go wide')}<div class="tail-px-row">${B('tail-howto','chat',t('看懂提示','The signs'))}${B('tail-book','sparkle',t(`稀有客人 ${rareCount()}/10`,`Rare guests ${rareCount()}/10`))}</div>${api.portal?`<div class="tail-px-row tail-px-tools">${T('tail-p-music','music',music,t('音乐','Music'))}${T('tail-p-sound','sound',sound,t('音效','Sound'))}<button class="tail-px-tog" id="tail-lang" aria-label="${t('English','中文')}">${I('globe')}<b>${t('EN','中')}</b></button>${api.portal.branch?`<button class="tail-px-tog" id="tail-home" aria-label="${t('回到我的小店','Back to my café')}">${I('store')}</button>`:''}</div><button class="tail-link" id="tail-new">${t('新开分店','New café')}</button>`:''}${dailyInfo?`<button class="tail-link" id="tail-home-daily">${t('回到我的小店','Back to my café')}</button>`:`<button class="tail-link danger" id="tail-restart">${t('重新开始这家店','Restart this café')}</button>`}`);el.querySelector('.tail-modal').classList.add('tail-px',help?'tail-px-guide':'tail-px-pause');$('#tail-back',el)?.addEventListener('click',()=>{el.remove();paused=false;pause();});$('#tail-howto',el)?.addEventListener('click',()=>{el.remove();paused=false;pause(true);});$('#tail-home-daily',el)?.addEventListener('click',goHome);$('#tail-go-daily',el)?.addEventListener('click',goDaily);$('#tail-resume',el).onclick=()=>{el.remove();resume();};$('#tail-book',el).onclick=()=>{el.remove();guestBook();};const rs=$('#tail-restart',el);if(rs)rs.onclick=()=>{if(!rs.classList.contains('armed')){rs.classList.add('armed');rs.textContent=t(`再点一次确认：清掉这家店的游戏币、设备、员工和营业记录，从第 1 天开始（现在是第 ${g.day} 天）`,`Click again to confirm: this café’s coins, equipment, staff and play log are wiped and day 1 begins (now day ${g.day})`);audio.play('tap');return;}restart();};if(api.portal){const tog=(b,on)=>{b.classList.toggle('off',!on);b.setAttribute('aria-pressed',on);};$('#tail-p-music',el)?.addEventListener('click',e=>{$('#tail-music',root).click();tog(e.currentTarget,music);});$('#tail-p-sound',el)?.addEventListener('click',e=>{$('#tail-sound',root).click();tog(e.currentTarget,sound);});$('#tail-lang',el)?.addEventListener('click',api.portal.switchLang);const nw=$('#tail-new',el);if(nw)nw.onclick=()=>{if(!nw.classList.contains('armed')){nw.classList.add('armed');nw.textContent=t('再点一次：去新开一家分店（这家店的进度会保留）','Click again to open a new café (this one stays saved)');audio.play('tap');return;}api.newSeed();};$('#tail-home',el)?.addEventListener('click',api.portal.myCafe);}}
  function shop(fromDay=false,tab='equip',reopen=false){if(!fromDay&&!reopen&&(!running||paused))return;paused=true;stopInput();persist();const early=tailFree(g),tabs=[['equip',t('设备','Equipment')],['staff',t('员工','Staff')],['grow',t('扩建','Expand')]];let body='';
   if(tab==='equip')body=`<div class="tail-upgrades">${Object.keys(TAIL_UPGRADES).map(id=>{const level=tailLevel(g,id),max=TAIL_UPGRADES[id].length,cost=tailPrice(g,id),info=upgradeInfo[id][Math.min(level,max-1)];return `<button data-buy="${id}" ${cost===null||g.cash<cost?'disabled':''}><span class="tail-upgrade-icon">${tailIconHTML(upgradeIcon[id])}</span><span><strong>${info[0]}<em>Lv ${level}/${max}</em></strong><small>${cost===null?t('已经满级。','Fully upgraded.'):info[1]}</small></span><b>${cost??t('满级','MAX')}</b></button>`;}).join('')}</div>`;
   else if(tab==='staff')body=`<div class="tail-upgrades">${TAIL_ROLES.filter(r=>r!=='cook'||tailLevel(g,'kitchen')).map(r=>{const n=tailStaffCount(g,r),max=TAIL_STAFF[r].max,hire=tailHirePrice(g,r),train=tailTrainPrice(g,r),lv=g.training[r]??0,[icon,name,desc]=staffInfo[r],locked=r==='cook'&&!tailLevel(g,'kitchen');return `<div class="tail-entry tail-staff"><span class="tail-upgrade-icon">${tailIconHTML(icon)}</span><span><strong>${name}<em>${n}/${max}</em>${n?`<em>${t('熟练','Skill')} ${lv}/2</em>`:''}</strong><small>${locked?t('先在「设备」里开烘焙厨房。','Open the bakery under Equipment first.'):desc}</small>${early?'':`<small class="tail-train-note">${lv<2?t(`培训 Lv${lv+1}：`,`Training Lv${lv+1}: `)+trainInfo[r][lv]:t('已精通：','Mastered: ')+trainInfo[r][1]}${lv===1?t(`（已有 Lv1：${trainInfo[r][0]}）`,` (Lv1 done: ${trainInfo[r][0]})`):''}</small>`}</span><span class="tail-staff-actions"><button data-hire="${r}" ${hire===null||g.cash<hire?'disabled':''}>${hire===null?(locked?t('未开放','LOCKED'):t('已满员','FULL')):t('雇用 ','Hire ')+hire}</button>${n&&!early?`<button data-train="${r}" ${train===null||g.cash<train?'disabled':''}>${train===null?t('已精通','MASTERED'):t(`培训 Lv${lv+1} · `,`Train Lv${lv+1} · `)+train}</button>`:''}</span></div>`;}).join('')}</div>`;
