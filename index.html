@@ -1713,6 +1713,9 @@ const C={mustard:0xd9b35e,sageDk:0x6f8a77,walnut:0x8a6a52,wall2:0xece6dc,wain:0x
 // Each outdoor area dresses its tables and chairs in its own colours: table top, legs, chair seats, chair wood.
 const ZONE=[{top:'#e2c596',leg:'#8d6440',round:'#f4f1ea',base:'#4b5052',seats:['#f4f1ea','#a9b9a0','#9fb4c5','#d9b35e'],wood:'#b98a5a'},{top:'#eeeae2',leg:'#7d8783',round:'#eeeae2',base:'#7d8783',seats:['#e9e6dd','#c46f52'],wood:'#9aa3a0'},{top:'#c99a68',leg:'#6b4a33',round:'#c99a68',base:'#6b4a33',seats:['#d9b35e','#cf8f5a'],wood:'#8d6440'},{top:'#8a6a52',leg:'#3e2e24',round:'#8a6a52',base:'#3e2e24',seats:['#9fb4c5','#7f9ab0'],wood:'#6f533f'}];
 const RARE_KIND={tycoon:'fox',astronaut:'rabbit',rocker:'hedgehog',prince:'deer',detective:'owl',magician:'rabbit',influencer:'deer',sleepy:'hedgehog',granny:'fox',founder:'binturong'},RARE_COAT={tycoon:'#2b2f45',astronaut:'#e8ecef',rocker:'#24242a',prince:'#7a2f4a',detective:'#b39a6a',magician:'#3b2a5a',influencer:'#f2a7c0',sleepy:'#9fb6d8',granny:'#9a6f8a',founder:'#8a6a46'};
+// Walk frames advance with distance: a.walk grows .08 per world unit walked, so one four-frame stride covers
+// about 125 units, two steps of roughly one body width each. The manager steps about four times a second.
+const WALK_FRAMES=.4;
 const ISO_KINDS=new Set(['binturong','fox','rabbit','hedgehog','deer','owl']);
 function tailIsoRenderer(canvas,lang='zh'){
  const gl=document.createElement('canvas');gl.setAttribute('aria-hidden','true');gl.style.cssText='position:absolute;pointer-events:none;z-index:0;aspect-ratio:auto;image-rendering:pixelated';canvas.before(gl);Object.assign(canvas.style,{position:'relative',zIndex:'1',background:'transparent'});canvas.closest('.tail-game')?.classList.add('tail-3d');
@@ -1841,7 +1844,7 @@ float pat(){vec2 u=tri();
   props.done();
   for(const l of lamps)scene.remove(l);lamps.length=0;for(const t of g.tables)if(t.open&&t.zone===0&&t.seats===4){const l=new THREE.PointLight(0xffc27a,5,5.5,1.6);l.position.set(X(t.x),2.7,Z(t.y));scene.add(l);lamps.push(l);}}
  // Animals, and what stands on the tables, change every frame.
- function animate(g,t){actors.clear();const A=(a,kind,o={})=>{const moving=a.moving,frame=moving?'walk'+(Math.floor((a.walk||0)*1.6)%4+4)%4:((t+(a.id??0)*.37)%1.2<.6?'idle0':'idle1'),carry=o.bag?.length?o.bag.map(b=>b.type).slice(0,3):null,key=`a:${kind}:${o.role??''}:${o.top??''}:${frame}:${carry??''}`;
+ function animate(g,t){actors.clear();const A=(a,kind,o={})=>{const moving=a.moving,frame=moving?'walk'+(Math.floor((a.walk||0)*WALK_FRAMES)%4+4)%4:((t+(a.id??0)*.37)%1.2<.6?'idle0':'idle1'),carry=o.bag?.length?o.bag.map(b=>b.type).slice(0,3):null,key=`a:${kind}:${o.role??''}:${o.top??''}:${frame}:${carry??''}`;
    actors.add(sprite(key,()=>{const c=P.drawCast(kind,{role:o.role,top:o.top,frame,carry});return{canvas:c,ax:14,ay:40};}),a.x,a.y,o.sit?.46:0,{flip:(a.face??1)<0,near:.06});};
   for(const gr of g.groups){const seated=gr.state==='waiting'||gr.state==='eating';gr.members.forEach((m,i)=>{const kind=m.rare?RARE_KIND[m.rare]:ISO_KINDS.has(m.kind)?m.kind:'fox';A(m,kind,{top:m.rare?RARE_COAT[m.rare]:kind==='owl'?null:P.SWEATERS[(gr.id*3+i+(m.tint|0))%P.SWEATERS.length],sit:seated});});}
   for(const s of g.staff)A(s,'binturong',{role:s.role,bag:s.bag});if(g.inspector)A(g.inspector,'owl');A(g.player,'binturong',{role:'manager',bag:g.player.bag});
