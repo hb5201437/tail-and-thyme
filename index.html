@@ -1212,6 +1212,8 @@ const TAIL_ICONS=(()=>{
   sparkle:['.....y.....','.....y.....','....yYy....','....yYy....','..yyYYYyy..','yyYYYWYYYyy','..yyYYYyy..','....yYy....','....yYy....','.....y.....','.....y.....'],
   star:['.....Y.....','....YYY....','....YYY....','YYYYYYYYYYY','.YYYYYYYYY.','..YYYYYYY..','..YYYYYYY..','.YYYY.YYYY.','.YYY...YYY.','YY.......YY'],
   starOff:['.....w.....','....www....','....www....','wwwwwwwwwww','.wwwwwwwww.','..wwwwwww..','..wwwwwww..','.wwww.wwww.','.www...www.','ww.......ww'],
+  // The manager's own marker: a blue you-are-here dot, so it never reads as one of the yellow arrows to a job.
+  you:['....WWWW....','..WWWWWWWW..','.WWWBBBBWWW.','.WWBbbBBBWW.','WWBbbBBBBBWW','WWBbBBBBBBWW','WWBBBBBBBBWW','WWBBBBBBBNWW','.WWBBBBBNWW.','.WWWBNNNWWW.','..WWWWWWWW..','....WWWW....'],
   down:['...YYYY...','...YYYY...','...YYYY...','...YYYY...','YYYYYYYYYY','.YYYYYYYY.','..YYYYYY..','...YYYY...','....YY....'],
   check:['..........LL','.........LLL','........LLL.','LL.....LLL..','LLL...LLL...','.LLL.LLL....','..LLLLL.....','...LLL......','....L.......'],
   cross:['rr......rr','rrr....rrr','.rrr..rrr.','..rrrrrr..','...rrrr...','...rrrr...','..rrrrrr..','.rrr..rrr.','rrr....rrr','rr......rr'],
@@ -1685,13 +1687,14 @@ function tailRenderer(canvas,lang='zh',iso=null){
   if(g.action){const a=g.action,word={stock:icons.stock,wash:icons.sink,serve:'down',clear:'sponge',pickup:'hand',fix:'wrench',mop:'mop'}[a.kind];stand(g.player.x,g.player.y);bar(g.player.x,g.player.y-96,a.p/a.duration);if(word&&a.duration>.4)badge(word,g.player.x,g.player.y-124,true);}c.restore();}
  function effects(g){
   for(const e of g.effects){if(e.kind==='burst'){burst(e);continue;}if(e.kind==='coin'||e.kind==='craft'||e.kind==='combo'){popText(e);continue;}if(e.kind==='rare'){c.save();stand(e.x,e.y);const k=3.2-e.life;for(let i=0;i<14;i++){const sx=e.x+((i*37)%120-60),sy=e.y-30+((k*140+i*23)%160);c.globalAlpha=Math.max(0,Math.min(1,e.life-.2));ellipse(sx,sy,5,5,'#f2cf6a');stroke('#a8802a',1);}c.globalAlpha=Math.min(1,e.life);row([e.icon,e.text],e.x,e.y,30,'#ffd23f',true,'#4a1f45');c.restore();continue;}c.save();stand(e.x,e.y);c.globalAlpha=Math.min(1,e.life);row([e.icon,e.text],e.x,e.y,e.kind==='task'?20:18,e.kind==='coin'||e.kind==='task'?'#856226':'#b87756',true,'#fff6e2');c.restore();}}
- // The manager is marked by the arrow above the head (you); the floor under the feet stays clear.
+ // The manager is marked by a blue dot above the head (you), not an arrow: yellow arrows only ever point at a job.
+ // The floor under the feet stays clear.
  function halo(g){const p=g.player,k=grow();
   // Serving the founder earns the manager a twinkle over the head.
   if(g.rares?.founder>0){stand(p.x,p.y);ico('sparkle',p.x+22,p.y-92+Math.sin(g.time*3)*3,14*k);}
   for(const gr of g.groups){if(!gr.rare||gr.angry||gr.state==='leaving')continue;const m=gr.members[0];if(m.x<camera-140||m.x>camera+W+140)continue;stand(m.x,m.y);for(let i=0;i<3;i++){const a=g.time*2+i*2.1;ico('sparkle',m.x+Math.cos(a)*24,m.y-70+Math.sin(a)*10,(10+4*Math.sin(g.time*5+i))*k);}}}
  function spotlight(g){const gr=g.groups.find(v=>v.rare&&g.time-v.born<4.5&&!v.angry);if(!gr)return;const m=gr.members[0],k=g.time-gr.born,a=.5*Math.min(1,k/.4,(4.5-k)/1);c.save();c.beginPath();c.rect(camera-60,-60,W+120,H+120);c.ellipse(m.x,m.y-40,95,120,0,0,Math.PI*2);c.fillStyle=`rgba(12,8,20,${a.toFixed(3)})`;c.fill('evenodd');for(let i=0;i<10;i++){const ang=i/10*Math.PI*2+k*1.5,r=70+12*Math.sin(k*4+i);ico('sparkle',m.x+Math.cos(ang)*r,m.y-40+Math.sin(ang)*r*1.2,12+(i%3)*4);}c.restore();}
- function you(g){if(g.action&&g.action.duration>.4)return;stand(g.player.x,g.player.y);const p=g.player,y=p.y-102+Math.sin(g.time*4)*4;ico('down',p.x,y-14,30*grow());}
+ function you(g){if(g.action&&g.action.duration>.4)return;stand(g.player.x,g.player.y);const p=g.player,y=p.y-102+Math.sin(g.time*3)*2;ico('you',p.x,y+4,32*grow());}
  // Where the manager is needed next: tables waiting on what they carry, the courier, jammed machines.
  function targets(g){const out=[],mine=new Set(g.player.bag.map(v=>v.group).filter(Boolean));for(const gr of mine){const t=g.tables[gr.table],p=gr.special==='courier'?TAIL_SPOTS.pickup:t&&{x:t.ax,y:t.ay};if(p)out.push({x:p.x,y:p.y,kind:'deliver',label:gr.special==='courier'?icons.pickup:'plate',num:gr.special==='courier'?null:String(gr.table+1).padStart(2,'0')});}
   for(const st of g.stations)if(st.jam>0)out.push({x:st.x,y:TAIL_BAR_Y+10,kind:'jam',label:'wrench'});for(const gr of g.groups)if(gr.rare&&!gr.angry&&gr.state!=='leaving'){const m=gr.members[0];out.push({x:m.x,y:m.y,kind:'rare',label:'sparkle'});}const job=nextJob(g);if(job)out.push(job);return out.sort((a,b)=>Math.abs(a.x-g.player.x)-Math.abs(b.x-g.player.x));}
@@ -2648,7 +2651,7 @@ const words={welcome:t('欢迎开店。走到点单台，接待第一桌客人�
  function guideBody(){const I=n=>tailIconHTML(n),tag=(icons,kind='job',num='')=>`<i class="tail-lg-tag ${kind}">${[].concat(icons).map(I).join('')}${num?`<b>${num}</b>`:''}</i>`,bub=(inner,kind='')=>`<i class="tail-lg-bub ${kind}">${inner}</i>`,row=(sign,text)=>`<li><i class="tail-lg-sign">${sign}</i><span>${text}</span></li>`,sec=(title,rows)=>`<section><h3>${title}</h3><ul>${rows.join('')}</ul></section>`;
   const jobs=[['hand',t('取做好的餐','pick up'),],['barista',t('做咖啡','make coffee')],['herb',t('泡花草茶','brew tea')],['kitchen',t('做点心','bake & cook')],['fire',t('开烤炉','light oven')],['stock',t('搬咖啡豆','get beans')],['sink',t('送去洗碗','wash up')],['sponge',t('擦桌子','clear table')],['coin',t('收钱','collect')],['cashier',t('带客入座','seat guests')],['mop',t('拖地','mop')],['owl',t('见检查员','meet inspector')],['crown',t('贵宾优先','VIP first')],['hire',t('去办公室招人','hire help')]].map(([i,n])=>`<span>${I(i)}<small>${n}</small></span>`).join('');
   return `<div class="tail-legend">${sec(t('该去哪','Where to go'),[
-   row(`<i class="tail-lg-you">${I('down')}</i>`,t('头顶跳动的黄箭头是你自己','The bouncing yellow arrow is you')),
+   row(`<i class="tail-lg-you">${I('you')}</i>`,t('头顶的圆点是你自己','The round dot overhead is you')),
    row(tag('hand'),t('绿边牌子：下一步去这里。图案是要做的事：','Green tag: go here next. The picture is the job:')+`<span class="tail-lg-jobs">${jobs}</span>`),
    row(tag('plate','deliver','03'),t('金边牌子＋地上金色虚线：把手里的东西送到这一桌，数字是桌号','Gold tag and gold dashes: take what you carry to this table number')),
    row(tag('wrench','jam'),t('红边扳手：机器卡住了，走过去修','Red wrench: a machine jammed, walk over to fix it')),
