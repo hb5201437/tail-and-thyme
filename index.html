@@ -1753,6 +1753,8 @@ function tailRenderer(canvas,lang='zh',iso=null){
  // The same forest as behind the hall, for the margins of a view wider than the café.
  function woods(x0,x1,y0=0,y1=H){c.save();c.beginPath();c.rect(x0,y0,x1-x0,y1-y0);c.clip();c.fillStyle=grad(0,y0<0?y0:0,0,y1>H?y1:H,['#1b3f30','#2b5641','#4a7250']);c.fillRect(x0,y0,x1-x0,y1-y0);for(let i=0;i<120;i++){const x=Math.floor(x0/1100)*1100+(i*131+37)%2200-30,y=y0+((i*97+11)%Math.max(60,Math.round(y1-y0+40)))-10,r=18+(i*13)%30;if(x+r*1.2<x0||x-r*1.2>x1)continue;ellipse(x+4,y+6,r*1.15,r*.95,'#12302440');ellipse(x,y,r*1.15,r*.95,i%3?'#2e5a43':'#3b694b');ellipse(x-r*.35,y-r*.3,r*.62,r*.5,i%3?'#3f6e50':'#517e58');}c.restore();}
  // A strip map of the whole café: tables by state, staff, spills and the manager. Tap it to walk.
+// Only the flat 2D fallback draws it: its rows assume that view's shallow floor, and the 3D view's
+// edge arrows already point to anything off screen.
  function minimap(g,span,goals=[]){if(span<=W*1.1){mini=null;return;}c.save();c.setTransform(scale,0,0,scale,0,0);const w=Math.min(W*.45,span/TAIL_ZONE_W*78),h=40,x0=W-w-12,y0=wide?62:12,mx=v=>x0+6+v.x/span*(w-12),my=v=>y0+6+(v.y-182)/258*(h-12);mini={x0,y0,w,h,span};rr(x0,y0,w,h,9);fill('#163d32d6');
   for(let z=0;z*TAIL_ZONE_W<span;z++){const a=mx({x:z*TAIL_ZONE_W}),b=mx({x:(z+1)*TAIL_ZONE_W});if(z>=g.zones){rr(a,y0+4,b-a,h-8,4);fill('#00000033');}if(z)line([[a,y0+6],[a,y0+h-6]],'#ffffff22',1);}
   if(!iso){c.save();c.globalAlpha=.9;const viewA=mx({x:camera}),viewB=mx({x:camera+W});rr(viewA,y0+2,viewB-viewA,h-4,5);stroke('#f2dfaa66',1.2);c.restore();}
@@ -1765,7 +1767,7 @@ function tailRenderer(canvas,lang='zh',iso=null){
   floorMarks(g,seen);c.save();halo(g);c.restore();
   for(const s of g.staff){if(!seen(s))continue;stand(s.x,s.y);if(s.task?.kind==='rest'){pill(['sleep'],s.x,s.y-92,11*grow(),'#1d3b2fd8','#f6e6b8');}else if(s.rec&&s.rec.energy<35&&g.session?.pantry)ico('drop',s.x+16,s.y-80,18*grow());}
   const ins=g.inspector;if(ins&&!ins.done&&seen(ins)){const left=Math.max(0,Math.ceil(ins.until-g.time)),w=zh?96:120;stand(ins.x,ins.y);pill(['hourglass',left],ins.x,ins.y-112,12*grow(),'#1d3b2fe6','#f6e6b8');}
-  const goals=targets(g);onTop(g,goals);you(g);heads(g,seen);rings(g);if(g.zones<4&&seen({x:g.zones*TAIL_ZONE_W+170,y:300}))locked(g.zones,g);effects(g);c.setTransform(1,0,0,1,0,0);minimap(g,span,goals);edges(goals);}
+  const goals=targets(g);onTop(g,goals);you(g);heads(g,seen);rings(g);if(g.zones<4&&seen({x:g.zones*TAIL_ZONE_W+170,y:300}))locked(g.zones,g);effects(g);c.setTransform(1,0,0,1,0,0);mini=null;edges(goals);}
  return {draw:iso?isoDraw:draw,miniHit,coach(on){coachOn=!!on;},
   // For the 3D view: set up what each guest holds, and draw one animal into another canvas.
   prepare(g){held=new Set();for(const gr of g.groups)meals(gr);},actor(ctx2,a,kind,bag=[],role=null,size=1,tint=0){const prev=c;c=ctx2;character(a,kind,bag,role,size,tint);c=prev;},
